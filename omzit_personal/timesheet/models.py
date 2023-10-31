@@ -84,8 +84,10 @@ class Timesheet(models.Model):
     is_day_corrected = models.BooleanField(default=False, verbose_name="Корректировка день")
     is_night_corrected = models.BooleanField(default=False, verbose_name="Корректировка ночь")
 
+    #TODO Добавить поле для прикрепления обоснования изменения табеля
+
     def __str__(self):
-        return f"{self.fio}-{self.date.strftime("%d.%m.%Y")}"
+        return f"{self.fio}-{self.date.strftime('%d.%m.%Y')}"
 
     class Meta:
         verbose_name = "Табель"

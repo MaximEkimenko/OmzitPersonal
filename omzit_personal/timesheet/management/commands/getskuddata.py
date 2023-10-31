@@ -2,8 +2,6 @@ from datetime import datetime as dt
 import datetime
 from typing import Tuple, Optional
 
-# from django.core.management.base import BaseCommand, CommandError
-
 import pyodbc
 from django.core.management import BaseCommand
 
@@ -21,7 +19,7 @@ BD_PASSWORD = 'qC4HptD'
 
 
 class Command(BaseCommand):
-    help = "Closes the specified poll for voting"
+    help = "Выводит в консоль информацию со СКУД по сотрудникам из БД за последний день"
 
     def handle(self, *args, **options):
         get_timesheets(employers=tuple([employee.fio for employee in Employee.objects.all()]))
@@ -167,7 +165,16 @@ def get_timesheets(
         get_day_shift_query(date, POINTS[point], add_condition),
         get_night_shift_query(date, POINTS[point], add_condition)
     ]
-    result = {}
+
+    # заполняем по списку сотрудников табель нулями
+    if employers:
+        result = {
+            employee: (0, employee, None, None, None, 'Ошибка', 'Дневная')
+            for employee in employers
+        }
+    else:
+        result = {}
+
     errors_fios = []
     for query in queries:
         cursor.execute(*query)

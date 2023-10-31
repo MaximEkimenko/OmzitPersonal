@@ -28,7 +28,19 @@ class EmployeeAdmin(admin.ModelAdmin):
     list_display = all_fields
     list_display_links = ["fio"]
     search_fields = ["fio"]
-    list_filter = all_fields
+    list_filter = [
+        "job_title",
+        "rank_title",
+        "division",
+        "status",
+        "schedule",
+        "shift_hours",
+        "skud_access",
+        "day_start",
+        "boss",
+        "KTR_category",
+        "has_NAX",
+    ]
     list_editable = [
         "status",
         "schedule",

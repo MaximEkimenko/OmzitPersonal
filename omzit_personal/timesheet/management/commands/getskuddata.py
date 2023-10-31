@@ -5,6 +5,9 @@ from typing import Tuple, Optional
 # from django.core.management.base import BaseCommand, CommandError
 
 import pyodbc
+from django.core.management import BaseCommand
+
+from timesheet.models import Employee
 
 POINTS = {
     'Турникет': (40, 41),
@@ -17,24 +20,12 @@ BD_USERNAME = 'ASUP'
 BD_PASSWORD = 'qC4HptD'
 
 
-# class Command(BaseCommand):
-#     help = "Closes the specified poll for voting"
-#
-#     def handle(self, *args, **options):
-#         rows = []
-#         for row in get_entry_time(('Чекаловец Александр Валерьевич', ''), None):
-#
-#             rows.append(
-#                 Temp(
-#                     hours=row[0],
-#                     employee=row[1],
-#                     skud_number=row[2],
-#                     entry_time=row[3],
-#                     exit_time=row[5],
-#                     shift_type=row[6]
-#                 )
-#             )
-#         Temp.objects.bulk_create(rows)
+class Command(BaseCommand):
+    help = "Closes the specified poll for voting"
+
+    def handle(self, *args, **options):
+        get_timesheets(employers=tuple([employee.fio for employee in Employee.objects.all()]))
+
 
 def get_night_shift_query(date, point, add_condition):
     night = (
@@ -182,21 +173,20 @@ def get_timesheets(
         cursor.execute(*query)
         row = cursor.fetchone()
         while row:
-            result[row[1]] = row
-
+            if row[1][5] == 'Ошибка':
+                errors_fios.append(row[1][5])
+            else:
+                result[row[1]] = row
             row = cursor.fetchone()
     cnxn.close()
 
-    # поиск ошибок
-    for i in result:
-        if result[i][5] == 'Ошибка':
-            errors_fios.append(result[i][1])
-            print(result[i])
-    for fio in get_all_fios(date):
-        if fio[1] not in result and fio[0] != 2:
-            data = (None, fio[1], fio[0], None, None, 'Ошибка', 'Дневная')
-            print(data)
-            errors_fios.append(data)
+    # если выбрана проверка всех сотрудников, то в ошибки добавляем отметившихся, но отсутствующих на данной точке доступа
+    if not employers:
+        for fio in get_all_fios(date):
+            if fio[1] not in result and fio[0] != 2:
+                data = (None, fio[1], fio[0], None, None, 'Ошибка', 'Дневная')
+                print(data)
+                errors_fios.append(data)
 
     return result
 
@@ -236,4 +226,4 @@ def get_all_fios(date: datetime = dt.date(dt.now() - datetime.timedelta(days=1))
 
 
 if __name__ == "__main__":
-    get_timesheets()
+    get_timesheets(employers=tuple([employee.fio for employee in Employee.objects.all()]))

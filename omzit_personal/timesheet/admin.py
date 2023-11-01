@@ -72,8 +72,10 @@ class TimesheetAdmin(admin.ModelAdmin):
             "Дневная смена",
             {
                 "fields": [
-                    "skud_day_start",
-                    "skud_day_end",
+                    "skud_day_start_1",
+                    "skud_day_end_1",
+                    "skud_day_start_2",
+                    "skud_day_end_2",
                     "skud_day_duration",
                     "boss_day_duration",
                     "is_day_corrected",
@@ -99,8 +101,10 @@ class TimesheetAdmin(admin.ModelAdmin):
         "fio",
         "day_status",
         "date",
-        "skud_day_start",
-        "skud_day_end",
+        "skud_day_start_1",
+        "skud_day_end_1",
+        "skud_day_start_2",
+        "skud_day_end_2",
         "skud_day_duration",
         "boss_day_duration",
         "is_day_corrected",
@@ -113,6 +117,7 @@ class TimesheetAdmin(admin.ModelAdmin):
     list_display_links = ["fio"]
     search_fields = ["fio"]
     list_filter = [
+        "fio",
         "day_status",
         "date",
         "skud_day_duration",

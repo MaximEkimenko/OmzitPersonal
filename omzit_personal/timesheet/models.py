@@ -3,7 +3,9 @@ from django.db import models
 
 class Employee(models.Model):
     """ Сотрудник """
-    fio = models.CharField(max_length=255, verbose_name="ФИО")
+    # TODO Убрать unique=True когда будет синхронизация с 1С
+    fio = models.CharField(unique=True, max_length=255, verbose_name="ФИО")
+
     employment_date = models.DateField(null=True, blank=True, verbose_name="Дата приема на работу")
     fired_date = models.DateField(null=True, blank=True, verbose_name="Дата увольнения")
     job_title = models.CharField(max_length=255, verbose_name="Должность")
@@ -48,6 +50,7 @@ class Employee(models.Model):
     class Meta:
         verbose_name = "Сотрудник"
         verbose_name_plural = "Сотрудники"
+        ordering = ["fio"]
 
 
 class Timesheet(models.Model):
@@ -65,26 +68,45 @@ class Timesheet(models.Model):
         verbose_name="Статус на день"
     )
     date = models.DateField(verbose_name="Дата")
-    skud_day_start = models.DateTimeField(null=True, blank=True, verbose_name="Начало работы по СКУД")
-    skud_day_end = models.DateTimeField(null=True, blank=True, verbose_name="Окончание  работы по СКУД")
+    skud_day_start_1 = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Начало дневной смены по СКУД (интервал 1)"
+    )
+    skud_day_end_1 = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Окончание дневной смены  по СКУД (интервал 1)"
+    )
+    skud_day_start_2 = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Начало дневной смены по СКУД (интервал 2)"
+    )
+    skud_day_end_2 = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Окончание дневной смены  по СКУД (интервал 2)"
+    )
+
     skud_day_duration = models.PositiveSmallIntegerField(
-        null=True, blank=True, verbose_name="Длительность работы по СКУД"
+        null=True, blank=True, verbose_name="Длительность дневной смены по СКУД"
     )
+
     boss_day_duration = models.PositiveSmallIntegerField(
-        null=True, blank=True, verbose_name="Длительность работы по данным руководителя"
+        null=True, blank=True, verbose_name="Длительность дневной смены по данным руководителя"
     )
-    skud_night_start = models.DateTimeField(null=True, blank=True, verbose_name="Начало работы в ночь по СКУД")
-    skud_night_end = models.DateTimeField(null=True, blank=True, verbose_name="Окончание  работы в ночь по СКУД")
+    is_day_corrected = models.BooleanField(default=False, verbose_name="Выполнена корректировка дневной смены")
+
+    skud_night_start = models.DateTimeField(null=True, blank=True, verbose_name="Начало ночной смены по СКУД")
+    skud_night_end = models.DateTimeField(null=True, blank=True, verbose_name="Окончание ночной смены по СКУД")
     skud_night_duration = models.PositiveSmallIntegerField(
-        null=True, blank=True, verbose_name="Длительность работы в ночь по СКУД"
+        null=True, blank=True, verbose_name="Длительность ночной смены по СКУД"
     )
     boss_night_duration = models.PositiveSmallIntegerField(
-        null=True, blank=True, verbose_name="Длительность работы в ночь по данным руководителя"
+        null=True, blank=True, verbose_name="Длительность ночной смены по данным руководителя"
     )
-    is_day_corrected = models.BooleanField(default=False, verbose_name="Корректировка день")
-    is_night_corrected = models.BooleanField(default=False, verbose_name="Корректировка ночь")
-
-    #TODO Добавить поле для прикрепления обоснования изменения табеля
+    is_night_corrected = models.BooleanField(default=False, verbose_name="Выполнена корректировка ночной смены")
 
     def __str__(self):
         return f"{self.fio}-{self.date.strftime('%d.%m.%Y')}"
@@ -93,6 +115,7 @@ class Timesheet(models.Model):
         verbose_name = "Табель"
         verbose_name_plural = "Табели"
         ordering = ["-date"]
+        unique_together = ["fio", "date"]
 
 
 class DayStatus(models.Model):

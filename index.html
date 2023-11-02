@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+        <script src="main.js"></script>
+        <script src="localisation.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" />
+        <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-balham.css" /> -->
+        <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-balham-dark.css" /> -->
+        <title>Табель</title>
+    </head>
+    <body>
+        <form action="" method="post" enctype="multipart/form-data">
+            <!-- {% csrf_token %} -->
+            <div id="myGrid" style="width: 3000px" class="ag-theme-balham"></div>
+            <br />
+            <button type="submit">
+                <p class="red_word">Сохранить</p></button
+            ><br /><br />
+            <textarea
+                style="width: 800px; height: 200px"
+                id="csvResult"
+                placeholder="Click the Show CSV export content button to view exported CSV here"
+            ></textarea>
+        </form>
+        <button onclick="onBtnUpdate()">Показать данные для отправки</button>
+        <script type="text/javascript">
+            const localeText = AG_GRID_LOCALE_EN;
+            const today = "4";
+            const min_hours = 1;
+            const max_hours = 12;
+            const gridOptions = {
+                // each entry here represents one column
+                defaultColDef: {
+                    sortable: true,
+                    editable: true,
+                    filter: true,
+                    resizable: true,
+                    width: 100,
+                    cellStyle: cellStyle,
+                    editable: (params) => params.column.colId >= today - 1, // коректировка в прошлом запрещена
+
+                    // flex: 1,
+                    // floatingFilter: true,
+                },
+                // загрузка данных
+                rowData: [
+                    {
+                        FIO: "Екименко М.А.",
+                        fio_job_title: "worker",
+                        1: 11,
+                        2: 8,
+                        3: 8,
+                        4: 8,
+                        5: 7,
+                        6: 8,
+                        7: 8,
+                        8: 9,
+                        9: 10,
+                    },
+                    {
+                        FIO: "Добренко В.А.",
+                        fio_job_title: "worker",
+                        1: 10,
+                        2: 9,
+                        3: 7,
+                        4: 6,
+                        5: 8,
+                        6: 5,
+                        7: 8,
+                        8: 9,
+                        9: 10,
+                    },
+                    {
+                        FIO: "Роботнеко А.А.",
+                        fio_job_title: "worker",
+                        1: 10,
+                        2: 9,
+                        3: 7,
+                        4: 6,
+                        5: 8,
+                        6: 5,
+                        7: 8,
+                        8: 9,
+                        9: 10,
+                    },
+                ],
+                // настройка колонок
+                columnDefs: [
+                    { field: "id", initialHide: true },
+                    {
+                        field: "FIO",
+                        editable: false,
+                        headerName: "ФИО",
+                        // checkboxSelection: true,
+                        width: 200,
+                    },
+                    {
+                        field: "fio_job_title",
+                        headerName: "Должность",
+                        width: 200,
+                        cellDataType: "text",
+                        editable: false,
+                    },
+                    {
+                        field: "1",
+                        cellDataType: "number",
+                        // cellEditor: "agSelectCellEditor",
+                        // cellEditorParams: {
+                        // values: [1, 2, 3, 4, 5],
+                        // valueListGap: 0,
+                        cellEditorParams: {
+                            min: min_hours,
+                            max: max_hours,
+                        },
+                    },
+                    {
+                        field: "2",
+                        cellDataType: "number",
+                        cellEditor: "agNumberCellEditor",
+                        cellEditorParams: {
+                            min: min_hours,
+                            max: max_hours,
+                        },
+                        // cellStyle: (params) => {
+                        //     if (params.column.colId === today) {
+                        //         return { backgroundColor: "red" };
+                        //     }
+                        //     return null;
+                        // },
+                    },
+                    {
+                        field: "3",
+                        cellDataType: "number",
+                        cellEditor: "agNumberCellEditor",
+                        cellEditorParams: {
+                            min: min_hours,
+                            max: max_hours,
+                        },
+                    },
+                    {
+                        field: "4",
+                        cellDataType: "number",
+                        cellEditor: "agNumberCellEditor",
+                        cellEditorParams: {
+                            min: min_hours,
+                            max: max_hours,
+                        },
+                    },
+                    {
+                        field: "5",
+                        cellDataType: "number",
+                        cellEditor: "agNumberCellEditor",
+                        cellEditorParams: {
+                            min: min_hours,
+                            max: max_hours,
+                        },
+                    },
+                    {
+                        field: "6",
+                        cellDataType: "number",
+                        cellEditor: "agNumberCellEditor",
+                        cellEditorParams: {
+                            min: min_hours,
+                            max: max_hours,
+                        },
+                    },
+                    {
+                        field: "7",
+                        cellDataType: "number",
+                        cellEditor: "agNumberCellEditor",
+                        cellEditorParams: {
+                            min: min_hours,
+                            max: max_hours,
+                        },
+                    },
+                    {
+                        field: "8",
+                        cellDataType: "number",
+                        cellEditor: "agNumberCellEditor",
+                        cellEditorParams: {
+                            min: min_hours,
+                            max: max_hours,
+                        },
+                    },
+                    {
+                        field: "9",
+                        cellDataType: "number",
+                        cellEditor: "agNumberCellEditor",
+                        cellEditorParams: {
+                            min: min_hours,
+                            max: max_hours,
+                        },
+                    },
+                ],
+                rowSelection: "multiple",
+                animateRows: true,
+                columnHoverHighlight: true,
+                localeText: localeText,
+                onFirstDataRendered: autoSizeAll, // инициализация авторазмера при событии первого рендера
+                onCellValueChanged: edit_done, // обновление ячеек при событии редактирования
+            };
+            // приминение стилей
+            function cellStyle(params) {
+                // console.log(params);
+                if (params.column.colId < today) {
+                    return { backgroundColor: "gray" };
+                } else if (params.column.colId === today) {
+                    return { backgroundColor: "green" };
+                } else if (
+                    params.column.colId > today &&
+                    params.column.colId != "FIO" &&
+                    params.column.colId != "fio_job_title" &&
+                    params.value != null
+                ) {
+                    return { backgroundColor: "orange" };
+                } else if ((params.value === null) | (params.value === 0)) {
+                    return { backgroundColor: "red" };
+
+                    return null;
+                }
+            }
+            // обновление ячеек
+            function edit_done() {
+                gridOptions.api.refreshCells();
+            }
+            // Авторазмер колонок по содержимому
+            function autoSizeAll(skipHeader) {
+                const allColumnIds = [];
+                gridOptions.columnApi.getColumns().forEach((column) => {
+                    allColumnIds.push(column.getId());
+                });
+                gridOptions.columnApi.autoSizeColumns(allColumnIds, skipHeader);
+                gridOptions.api.setDomLayout("autoHeight");
+            }
+
+            function getExportParams() {
+                return {
+                    // skipColumnGroupHeaders: getBoolean("columnGroups"),
+                    skipColumnHeaders: true,
+                    suppressQuotes: true,
+                };
+            }
+
+            function onBtnUpdate() {
+                const output_data = gridOptions.api.getDataAsCsv(getExportParams());
+                document.querySelector("#csvResult").value = output_data;
+            }
+
+            // установка grid в div id=myGrid
+            document.addEventListener("DOMContentLoaded", () => {
+                const eGridDiv = document.getElementById("myGrid");
+                new agGrid.Grid(eGridDiv, gridOptions);
+            });
+        </script>
+
+        <!-- <button onclick="autoSizeAll(true)">Auto-Size All (Skip Header)</button> -->
+    </body>
+</html>

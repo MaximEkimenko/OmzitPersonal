@@ -29,31 +29,44 @@
     </style>
 </head>
 <body>
+<form method="get" id="form2">
+    <p>
+        <input type="button" onclick="window.location.href = '{{ request.path }}';" value="Сбросить фильтр"/>
+    </p>
+    Цех {{ filter.form.fio__division }} Месяц {{ filter.form.date__month }} Год {{ filter.form.date__year }}
     <table id="customers">
-      <tr>
-        <th>ФИО</th>
-        <th>Должность</th>
-        {% for day in range %}
-          <th>{{ day }}</th>
-        {% endfor %}
-      </tr>
+        <tr>
+            <th>ФИО</th>
+            <th>Должность</th>
+            {% for day, value in timesheets.0.days.items %}
+            <th>{{ day }}</th>
+            {% endfor %}
+        </tr>
         {% for timesheet in timesheets %}
-            <tr>
-                <td>{{ timesheet.employee.fio }}</td>
-                <td>{{ timesheet.employee.job_title }}</td>
-                {% for day, value in timesheet.days.items %}
-                    <td>
-                        {% if value.0 %}
-                            {{ value.0 }}д
-                        {% endif %}
+        <tr>
+            <td>{{ timesheet.employee.fio }}</td>
+            <td>{{ timesheet.employee.job_title }}</td>
+            {% for day, value in timesheet.days.items %}
+            <td>
+                {% if value.0 %}
+                {{ value.0 }}д
+                {% endif %}
 
-                        {% if value.1 %}
-                            {{ value.1 }}н
-                        {% endif %}
-                    </td>
-                {% endfor %}
-            </tr>
+                {% if value.1 %}
+                {{ value.1 }}н
+                {% endif %}
+            </td>
+            {% endfor %}
+        </tr>
         {% endfor %}
     </table>
+</form>
+
+
+<script>
+    function onChange() {
+        document.getElementById("form2").submit();
+    }
+</script>
 </body>
 </html>

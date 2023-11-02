@@ -64,9 +64,9 @@ class Command(BaseCommand):
                     raise IntegrityError(f'{data}')
 
         employees = tuple([employee.fio for employee in Employee.objects.all()])
-        # date = datetime.date(day=1, month=9, year=2023)
-        # date_end = datetime.date(day=31, month=10, year=2023)
-        date = date_end = datetime.datetime.today() - ONE_DAY
+        date = datetime.date(day=1, month=9, year=2023)
+        date_end = datetime.date(day=31, month=10, year=2023)
+        # date = date_end = datetime.datetime.today() - ONE_DAY
         while date <= date_end:
             timesheets = get_timesheets(employers=employees, date=date)
             for employee, data in timesheets.items():

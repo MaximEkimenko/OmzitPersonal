@@ -3,8 +3,10 @@ from django.db import models
 
 class Employee(models.Model):
     """ Сотрудник """
+    objects = models.Manager()
+
     # TODO Убрать unique=True когда будет синхронизация с 1С
-    fio = models.CharField(unique=True, max_length=255, verbose_name="ФИО")
+    fio = models.CharField(unique=True, max_length=255, verbose_name="ФИО", db_index=True)
 
     employment_date = models.DateField(null=True, blank=True, verbose_name="Дата приема на работу")
     fired_date = models.DateField(null=True, blank=True, verbose_name="Дата увольнения")
@@ -55,8 +57,9 @@ class Employee(models.Model):
 
 class Timesheet(models.Model):
     """ Модель табеля сотрудника """
+    objects = models.Manager()
     fio = models.ForeignKey(
-        "Employee", on_delete=models.PROTECT, related_name="timesheet", verbose_name="ФИО сотрудника"
+        "Employee", on_delete=models.PROTECT, related_name="timesheet", verbose_name="ФИО сотрудника",
     )
 
     # (больничный, отпуск, явка, прогул и т.д. в виде обозначений)
@@ -98,8 +101,28 @@ class Timesheet(models.Model):
     )
     is_day_corrected = models.BooleanField(default=False, verbose_name="Выполнена корректировка дневной смены")
 
-    skud_night_start = models.DateTimeField(null=True, blank=True, verbose_name="Начало ночной смены по СКУД")
-    skud_night_end = models.DateTimeField(null=True, blank=True, verbose_name="Окончание ночной смены по СКУД")
+    skud_night_start_1 = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Начало ночной смены по СКУД (интервал 1)"
+    )
+    skud_night_end_1 = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Окончание ночной смены по СКУД (интервал 1)"
+    )
+
+    skud_night_start_2 = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Начало ночной смены по СКУД (интервал 2)"
+    )
+    skud_night_end_2 = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Окончание ночной смены по СКУД (интервал 2)"
+    )
+
     skud_night_duration = models.PositiveSmallIntegerField(
         null=True, blank=True, verbose_name="Длительность ночной смены по СКУД"
     )
@@ -114,12 +137,13 @@ class Timesheet(models.Model):
     class Meta:
         verbose_name = "Табель"
         verbose_name_plural = "Табели"
-        ordering = ["-date"]
+        ordering = ["date"]
         unique_together = ["fio", "date"]
 
 
 class DayStatus(models.Model):
     """ Модель статуса сотрудника на день """
+    objects = models.Manager()
     symbol = models.CharField(unique=True, max_length=2, verbose_name="Статус")
     name = models.CharField(max_length=255, verbose_name="Расшифровка статуса")
 

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        #customers {
+          font-family: Arial, Helvetica, sans-serif;
+          border-collapse: collapse;
+          width: 100%;
+        }
+
+        #customers td, #customers th {
+          border: 1px solid #ddd;
+          padding: 8px;
+        }
+
+        #customers tr:nth-child(even){background-color: #f2f2f2;}
+
+        #customers tr:hover {background-color: #ddd;}
+
+        #customers th {
+          padding-top: 12px;
+          padding-bottom: 12px;
+          text-align: left;
+          background-color: #04AA6D;
+          color: white;
+        }
+    </style>
+</head>
+<body>
+    <table id="customers">
+      <tr>
+        <th>ФИО</th>
+        <th>Должность</th>
+        {% for day in range %}
+          <th>{{ day }}</th>
+        {% endfor %}
+      </tr>
+        {% for timesheet in timesheets %}
+            <tr>
+                <td>{{ timesheet.employee.fio }}</td>
+                <td>{{ timesheet.employee.job_title }}</td>
+                {% for day, value in timesheet.days.items %}
+                    <td>
+                        {% if value.0 %}
+                            {{ value.0 }}д
+                        {% endif %}
+
+                        {% if value.1 %}
+                            {{ value.1 }}н
+                        {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

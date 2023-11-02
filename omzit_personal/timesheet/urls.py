@@ -1,5 +1,7 @@
 from django.urls import path, include
 
+from timesheet.views import TimesheetListView
+
 urlpatterns = [
-    # path('',)
+    path('', TimesheetListView.as_view(), name="timesheets")
 ]

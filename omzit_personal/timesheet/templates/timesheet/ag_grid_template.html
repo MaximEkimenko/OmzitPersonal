@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+        <!-- <script src="main.js"></script> -->
+        <!-- <script src="localisation.js"></script> -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" />
+        <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-balham.css" /> -->
+        <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-balham-dark.css" /> -->
+        <title>Табель</title>
+    </head>
+    <body>
+        <h1>Табель</h1>
+        <p>Табель подразделения за {{ timesheets.2.now_month.1 }}</p>
+        <form action="" method="post" enctype="multipart/form-data">
+            <!-- {% csrf_token %} -->
+            <div id="myGrid" style="width: 3000px" class="ag-theme-balham"></div>
+            <br />
+            <!-- <button type="submit">
+                <p class="red_word">Сохранить</p></button
+            ><br /><br /> -->
+            <textarea
+                style="width: 2000px; height: 200px"
+                id="csvResult"
+                placeholder="Click the Show CSV export content button to view exported CSV here"
+            ></textarea>
+        </form>
+        <button onclick="onBtnUpdate()">Показать данные для отправки</button>
+        <script type="text/javascript">
+            // const localeText = AG_GRID_LOCALE_EN;
+            const date = new Date()
+            const month = date.getMonth() + 1
+            let today = date.getDate()
+            if (Number("{{ timesheets.2.now_month.0 }}") === month) {
+                today = date.getDate();
+            } else if(Number("{{ timesheets.2.now_month.0 }}") > month)
+                { today = 0}
+            else {
+                today = 40
+            }
+            const min_hours = 1;
+            const max_hours = 12;
+            const gridOptions = {
+                // each entry here represents one column
+                defaultColDef: {
+                    sortable: true,
+                    editable: true,
+                    filter: true,
+                    resizable: true,
+                    width: 100,
+                    cellStyle: cellStyle,
+                    editable: (params) => params.column.colId >= today - 1, // коректировка в прошлом запрещена
+
+                    // flex: 1,
+                    floatingFilter: true,
+                },
+                // загрузка данных
+
+                rowData: [
+                {% for line in timesheets %}
+                {
+                    FIO: "{{ line.employee.fio }}",
+                    fio_job_title: "{{ line.employee.job_title }}",
+                    fio_division: "{{ line.employee.division }}",
+
+
+                    {% for day, hours in line.days.items %}
+
+
+                    "{{ day }}" : "{{ hours.0 }}",
+
+                    {% endfor %}
+                },
+                {% endfor %}
+
+                ],
+                // настройка колонок
+                columnDefs: [
+                    { field: "id", initialHide: true },
+                    {
+                        field: "FIO",
+                        editable: false,
+                        headerName: "ФИО",
+                        // checkboxSelection: true,
+                        width: 200,
+                    },
+                    {
+                        field: "fio_job_title",
+                        headerName: "Должность",
+                        width: 200,
+                        cellDataType: "text",
+                        editable: false,
+                    },
+                    {
+                        field: "fio_division",
+                        headerName: "Подразделение",
+                        width: 200,
+                        cellDataType: "text",
+                        editable: false,
+                    },
+                    {% for day in timesheets.1.days %}
+                    {
+
+                    headerName: "{{ day }}.{{ timesheets.2.now_month.0 }}",
+                    marryChildren: true,
+                    children: [
+                        {colId: "{{ day }}",
+                          field: "{{ day }}",
+                        headerName : "День",
+                        floatingFilter: false,
+
+
+                        },
+                        {colId: "night{{ day }}",
+                        field: "night{{ day }}",
+                        headerName : "Ночь",
+                        floatingFilter: false,
+                        columnGroupShow: 'open'
+                        },
+
+                        {colId: "enter{{ day }}",
+                        headerName : "Вход",
+                        floatingFilter: false,
+                        columnGroupShow: 'open'
+
+                        },
+
+                        {colId: "out{{ day }}",
+                        headerName : "Выход",
+                        floatingFilter: false,
+                        columnGroupShow: 'open'
+                        },
+
+
+
+
+                    ]
+
+                    // field: "{{ day }}",
+
+                    // cellDataType: "number",
+
+
+                    },
+                    {% endfor %}
+                ],
+                rowSelection: "multiple",
+                animateRows: true,
+                columnHoverHighlight: true,
+                // localeText: localeText,
+                onFirstDataRendered: autoSizeAll, // инициализация авторазмера при событии первого рендера
+                onCellValueChanged: edit_done, // обновление ячеек при событии редактирования
+            };
+            // приминение стилей
+            function cellStyle(params) {
+                // console.log(params);
+
+                if (Number(params.column.colId.slice(0,-2)) < today) {
+                    return { backgroundColor: "gray" }; // прошлое
+                } else if (Number(params.column.colId.slice(0,-2)) === today) {
+                    return { backgroundColor: "green" }; // сегодня
+                } else if (
+                    Number(params.column.colId.slice(0,-2))  > today &&
+                    params.column.colId != "FIO" &&
+                    params.column.colId != "fio_job_title" &&
+                    params.value != null
+
+                ) {
+                    return { backgroundColor: "orange" }; // будущее
+
+                 } else if ((params.value === null) | (params.value === 0)) {
+                    return { backgroundColor: "red" };
+                    return null;
+                }
+            }
+            // обновление ячеек
+            function edit_done() {
+                gridOptions.api.refreshCells();
+            }
+            // Авторазмер колонок по содержимому
+            function autoSizeAll(skipHeader) {
+                const allColumnIds = [];
+                gridOptions.columnApi.getColumns().forEach((column) => {
+                    allColumnIds.push(column.getId());
+                });
+                gridOptions.columnApi.autoSizeColumns(allColumnIds);
+                gridOptions.api.setDomLayout("autoHeight");
+            }
+
+            function getExportParams() {
+                return {
+                    // skipColumnGroupHeaders: getBoolean("columnGroups"),
+                    skipColumnHeaders: true,
+                    suppressQuotes: true,
+                };
+            }
+
+            function onBtnUpdate() {
+                const output_data = gridOptions.api.getDataAsCsv(getExportParams());
+                document.querySelector("#csvResult").value = output_data;
+            }
+
+            // установка grid в div id=myGrid
+            document.addEventListener("DOMContentLoaded", () => {
+                const eGridDiv = document.getElementById("myGrid");
+                new agGrid.Grid(eGridDiv, gridOptions);
+            });
+        </script>
+
+        <!-- <button onclick="autoSizeAll(true)">Auto-Size All (Skip Header)</button> -->
+    </body>
+</html>

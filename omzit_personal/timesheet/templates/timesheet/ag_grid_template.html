@@ -35,10 +35,11 @@
             const date = new Date()
             const month = date.getMonth() + 1
             let today = date.getDate()
+            console.log(today)
             if (Number("{{ timesheets.2.now_month.0 }}") === month) {
                 today = date.getDate();
             } else if(Number("{{ timesheets.2.now_month.0 }}") > month)
-                { today = 0}
+                { today = 0 }
             else {
                 today = 40
             }
@@ -53,7 +54,8 @@
                     resizable: true,
                     width: 100,
                     cellStyle: cellStyle,
-                    editable: (params) => params.column.colId >= today - 1, // коректировка в прошлом запрещена
+                    // editable: true,
+                    editable: (params) => Number(params.column.colId.slice(0,-2)) >= today - 1, // коректировка в прошлом запрещена
 
                     // flex: 1,
                     floatingFilter: true,
@@ -68,10 +70,14 @@
                     fio_division: "{{ line.employee.division }}",
 
 
-                    {% for day, hours in line.days.items %}
+                    {% for day, value in line.days.items %}
 
 
-                    "{{ day }}" : "{{ hours.0 }}",
+                    "{{ day }}" : "{{ value.0 }}",
+
+                    "night{{ day }}" : "{{ value.1 }}",
+                    "enter{{ day }}" : "{{ value.2.skud_day_start_1 }}",
+                    "out{{ day }}" : "{{ value.2.skud_day_end_1 }}",
 
                     {% endfor %}
                 },
@@ -123,6 +129,7 @@
                         },
 
                         {colId: "enter{{ day }}",
+                        field: "enter{{ day }}",
                         headerName : "Вход",
                         floatingFilter: false,
                         columnGroupShow: 'open'
@@ -130,6 +137,7 @@
                         },
 
                         {colId: "out{{ day }}",
+                        field: "out{{ day }}",
                         headerName : "Выход",
                         floatingFilter: false,
                         columnGroupShow: 'open'
@@ -159,23 +167,23 @@
             function cellStyle(params) {
                 // console.log(params);
 
-                if (Number(params.column.colId.slice(0,-2)) < today) {
-                    return { backgroundColor: "gray" }; // прошлое
-                } else if (Number(params.column.colId.slice(0,-2)) === today) {
-                    return { backgroundColor: "green" }; // сегодня
-                } else if (
-                    Number(params.column.colId.slice(0,-2))  > today &&
-                    params.column.colId != "FIO" &&
-                    params.column.colId != "fio_job_title" &&
-                    params.value != null
+                // if (Number(params.column.colId.slice(0,-2)) < today) {
+                //     return { backgroundColor: "gray" }; // прошлое
+                // } else if (Number(params.column.colId.slice(0,-2)) === today) {
+                //     return { backgroundColor: "green" }; // сегодня
+                // } else if (
+                //     Number(params.column.colId.slice(0,-2))  > today &&
+                //     params.column.colId != "FIO" &&
+                //     params.column.colId != "fio_job_title" &&
+                //     params.value != null
 
-                ) {
-                    return { backgroundColor: "orange" }; // будущее
+                // ) {
+                //     return { backgroundColor: "orange" }; // будущее
 
-                 } else if ((params.value === null) | (params.value === 0)) {
-                    return { backgroundColor: "red" };
-                    return null;
-                }
+                //  } else if ((params.value === null) | (params.value === 0)) {
+                //     return { backgroundColor: "red" };
+                //     return null;
+                // }
             }
             // обновление ячеек
             function edit_done() {

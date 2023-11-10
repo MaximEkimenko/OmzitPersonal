@@ -40,16 +40,16 @@ class TimesheetListView(ListView):
                     'days': {},
                     'now_month': [self.now_month, self.now_month_word]
                 })
-            timesheets[timesheet.fio.fio]['days'].update({
+            timesheets[timesheet.fio.fio]['dagiys'].update({
                 timesheet.date.day:
                     [timesheet.skud_day_duration if timesheet.skud_day_duration else 0,
-                    timesheet.skud_night_duration if timesheet.skud_night_duration else 0]
-                    # timesheet
+                    timesheet.skud_night_duration if timesheet.skud_night_duration else 0,
+                    timesheet]
 
             })
 
         context["timesheets"] = list(timesheets.values())
         context["range"] = range(1, 32)
-        print(context['timesheets'][0])
+        print(context['timesheets'][9])
         print(self.queryset)
         return context

@@ -39,5 +39,4 @@ class TimesheetListView(ListView):
                 ]
             })
         context["timesheets"] = list(timesheets.values())
-        context["range"] = range(1, 32)
         return context

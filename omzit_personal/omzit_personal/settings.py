@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
     'debug_toolbar',
     'django_filters',
+    'django_apscheduler',
 
     'timesheet.apps.TimesheetConfig',
 ]
@@ -189,3 +190,6 @@ LOGGING = {
         },
     },
 }
+
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+APSCHEDULER_RUN_NOW_TIMEOUT = 25

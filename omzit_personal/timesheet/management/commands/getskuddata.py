@@ -31,30 +31,34 @@ class Command(BaseCommand):
     help = ""
 
     def handle(self, *args, **options):
-        employees = {employee.fio: {"fio": employee} for employee in Employee.objects.all()}
-        # интервал выгрузки
-        date = datetime.date(day=1, month=5, year=2023)
+        date_start = datetime.date(day=1, month=5, year=2023)
         date_end = datetime.date(day=30, month=11, year=2023)
-        # date = date_end = YESTERDAY
-        while date <= date_end:
-            logger.info(f"Получение табеля за {date}...")
-            timesheets = get_timesheets(employees=employees, date=date)
-            created = updated = 0
-            for employee, data in timesheets.items():
-                try:
-                    _, is_created = Timesheet.objects.update_or_create(
-                        fio=data["fio"],
-                        date=data["date"],
-                        defaults=data,
-                    )
-                    if is_created:
-                        created += 1
-                    else:
-                        updated += 1
-                except Exception as ex:
-                    logger.error(f"Исключение {ex} при создании/обновлении записи в БД табелей с данными: {data}")
-            logger.info(f"{date} Обновлено: {updated}, создано: {created}")
-            date += ONE_DAY
+        get_skud_data(date_start=date_start, date_end=date_end)
+
+
+def get_skud_data(date_start=YESTERDAY, date_end=YESTERDAY):
+    employees = {employee.fio: {"fio": employee} for employee in Employee.objects.all()}
+    # интервал выгрузки
+    date = date_start
+    while date <= date_end:
+        logger.info(f"Получение табеля за {date}...")
+        timesheets = get_timesheets(employees=employees, date=date)
+        created = updated = 0
+        for employee, data in timesheets.items():
+            try:
+                _, is_created = Timesheet.objects.update_or_create(
+                    fio=data["fio"],
+                    date=data["date"],
+                    defaults=data,
+                )
+                if is_created:
+                    created += 1
+                else:
+                    updated += 1
+            except Exception as ex:
+                logger.error(f"Исключение {ex} при создании/обновлении записи в БД табелей с данными: {data}")
+        logger.info(f"{date} Обновлено: {updated}, создано: {created}")
+        date += ONE_DAY
 
 
 def get_night_shift_query(date, point, employees):

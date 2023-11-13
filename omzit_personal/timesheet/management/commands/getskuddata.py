@@ -228,12 +228,12 @@ def query_row_handler(row, result, errors):
     if exit_time:
         exit_time = make_aware(exit_time)
 
-    if errors and employee in errors:
+    if errors and employee in errors and msg != "Ошибка":
+        result[employee].update({
+            'skud_error': False,
+            'skud_error_query': None,
+        })
         logger.info(f"Обновлено: {row}")
-        if msg != "Ошибка":
-            result[employee].update({
-                'skud_error': False,
-            })
 
     if msg == 'Ошибка':
         # получаем табель сотрудника за прошлый день,
@@ -249,11 +249,11 @@ def query_row_handler(row, result, errors):
                 error_msg = "Ошибка выхода:"
             else:
                 error_msg = "Ошибка выход раньше входа:"
-            logger.warning(f"{error_msg} {row}")
             result[employee].update({
                 'skud_error': True,
                 'skud_error_query': get_detail_error_query(date=date, employee_id=employee_id)
             })
+            logger.warning(f"{error_msg} {row}")
 
     if shift == 'Дневная':
         result[employee].update({

@@ -74,26 +74,20 @@ class Timesheet(models.Model):
     skud_day_start_1 = models.DateTimeField(
         null=True,
         blank=True,
-        verbose_name="Начало дневной смены по СКУД (интервал 1)"
+        verbose_name="Вход"
     )
     skud_day_end_1 = models.DateTimeField(
         null=True,
         blank=True,
-        verbose_name="Окончание дневной смены  по СКУД (интервал 1)"
-    )
-    skud_day_start_2 = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name="Начало дневной смены по СКУД (интервал 2)"
-    )
-    skud_day_end_2 = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name="Окончание дневной смены  по СКУД (интервал 2)"
+        verbose_name="Выход"
     )
 
     skud_day_duration = models.PositiveSmallIntegerField(
         null=True, blank=True, verbose_name="Длительность дневной смены по СКУД"
+    )
+
+    skud_night_duration = models.PositiveSmallIntegerField(
+        null=True, blank=True, verbose_name="Длительность ночной смены по СКУД"
     )
 
     boss_day_duration = models.PositiveSmallIntegerField(
@@ -101,35 +95,14 @@ class Timesheet(models.Model):
     )
     is_day_corrected = models.BooleanField(default=False, verbose_name="Выполнена корректировка дневной смены")
 
-    skud_night_start_1 = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name="Начало ночной смены по СКУД (интервал 1)"
-    )
-    skud_night_end_1 = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name="Окончание ночной смены по СКУД (интервал 1)"
-    )
-
-    skud_night_start_2 = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name="Начало ночной смены по СКУД (интервал 2)"
-    )
-    skud_night_end_2 = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name="Окончание ночной смены по СКУД (интервал 2)"
-    )
-
-    skud_night_duration = models.PositiveSmallIntegerField(
-        null=True, blank=True, verbose_name="Длительность ночной смены по СКУД"
-    )
     boss_night_duration = models.PositiveSmallIntegerField(
         null=True, blank=True, verbose_name="Длительность ночной смены по данным руководителя"
     )
     is_night_corrected = models.BooleanField(default=False, verbose_name="Выполнена корректировка ночной смены")
+
+    skud_error = models.BooleanField(default=False, verbose_name="Ошибка входа/выхода по данным СКУД")
+
+    skud_error_query = models.TextField(null=True, blank=True, verbose_name="Запрос на детализацию в БД СКУД")
 
     def __str__(self):
         return f"{self.fio}-{self.date.strftime('%d.%m.%Y')}"

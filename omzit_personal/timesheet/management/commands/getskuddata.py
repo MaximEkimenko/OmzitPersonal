@@ -1,103 +1,80 @@
 import datetime
+import logging
+import os
+import time
 
-from typing import Tuple, Optional, Dict
+from typing import Dict
 
 import pyodbc
 from django.core.management import BaseCommand
-from django.db import IntegrityError
+from django.utils.timezone import make_aware
 
 from timesheet.models import Employee, Timesheet
+
+logger = logging.getLogger("logger")
 
 POINTS = {
     'Турникет': (40, 41),
 }
 
 ONE_DAY = datetime.timedelta(days=1)
+YESTERDAY = datetime.datetime.date(datetime.datetime.now() - ONE_DAY)
 
 # данные для подключения к БД
-BD_SERVER = '192.168.11.200'
-BD_DATABASE = 'Orion15.11.2022'
-BD_USERNAME = 'ASUP'
-BD_PASSWORD = 'qC4HptD'
+BD_SERVER = os.getenv("SKUD_DB_HOST")
+BD_DATABASE = os.getenv("SKUD_DB_NAME")
+BD_USERNAME = os.getenv("SKUD_DB_USER")
+BD_PASSWORD = os.getenv("SKUD_DB_PASSWORD")
 
 
 class Command(BaseCommand):
-    help = "Выводит в консоль информацию со СКУД по сотрудникам из БД за последний день"
+    help = ""
 
     def handle(self, *args, **options):
-        def create_or_update_timesheet(data: Dict):
-            data['fio'] = Employee.objects.get(fio=employee)
-            try:
-                existing_timesheet = Timesheet.objects.get(fio=data['fio'], date=data['date'])
-                if existing_timesheet.skud_day_start_1 or existing_timesheet.skud_day_end_1:
-                    existing_timesheet.skud_day_start_2 = data['skud_day_start_1']
-                    existing_timesheet.skud_day_end_2 = data['skud_day_end_1']
-                else:
-                    existing_timesheet.skud_day_start_1 = data['skud_day_start_1']
-                    existing_timesheet.skud_day_end_1 = data['skud_day_end_1']
-
-                if existing_timesheet.skud_night_start_1 or existing_timesheet.skud_night_end_1:
-                    existing_timesheet.skud_night_start_2 = data['skud_night_start_1']
-                    existing_timesheet.skud_night_end_2 = data['skud_night_end_1']
-                else:
-                    existing_timesheet.skud_night_start_1 = data['skud_night_start_1']
-                    existing_timesheet.skud_night_end_1 = data['skud_night_end_1']
-
-                if not existing_timesheet.skud_day_duration and data['skud_day_duration']:
-                    existing_timesheet.skud_day_duration = data['skud_day_duration']
-                elif existing_timesheet.skud_day_duration and data['skud_day_duration']:
-                    existing_timesheet.skud_day_duration += data['skud_day_duration']
-                else:
-                    pass
-
-                if not existing_timesheet.skud_night_duration and data['skud_night_duration']:
-                    existing_timesheet.skud_night_duration = data['skud_night_duration']
-                elif existing_timesheet.skud_night_duration and data['skud_night_duration']:
-                    existing_timesheet.skud_night_duration += data['skud_night_duration']
-                else:
-                    pass
-                existing_timesheet.save()
-            except Timesheet.DoesNotExist:
-                try:
-                    Timesheet.objects.create(**data)
-                except IntegrityError:
-                    raise IntegrityError(f'{data}')
-
-        employees = tuple([employee.fio for employee in Employee.objects.all()])
+        employees = {employee.fio: {"fio": employee} for employee in Employee.objects.all()}
         # интервал выгрузки
-        date = datetime.date(day=1, month=11, year=2023)
+        date = datetime.date(day=1, month=5, year=2023)
         date_end = datetime.date(day=30, month=11, year=2023)
-        # date = date_end = datetime.datetime.today() - ONE_DAY
+        # date = date_end = YESTERDAY
         while date <= date_end:
-            timesheets = get_timesheets(employers=employees, date=date)
+            logger.info(f"Получение табеля за {date}...")
+            timesheets = get_timesheets(employees=employees, date=date)
+            created = updated = 0
             for employee, data in timesheets.items():
-                if isinstance(data, list):
-                    for i_data in data:
-                        i_data['fio'] = Employee.objects.get(fio=employee)
-                        create_or_update_timesheet(data=i_data)
-                else:
-                    create_or_update_timesheet(data=data)
+                try:
+                    _, is_created = Timesheet.objects.update_or_create(
+                        fio=data["fio"],
+                        date=data["date"],
+                        defaults=data,
+                    )
+                    if is_created:
+                        created += 1
+                    else:
+                        updated += 1
+                except Exception as ex:
+                    logger.error(f"Исключение {ex} при создании/обновлении записи в БД табелей с данными: {data}")
+            logger.info(f"{date} Обновлено: {updated}, создано: {created}")
             date += ONE_DAY
 
 
-def get_night_shift_query(date, point, add_condition):
+def get_night_shift_query(date, point, employees):
     night = (
         f"{date.strftime('%d.%m.%Y')} 12:00",
         f"{(date + ONE_DAY).strftime('%d.%m.%Y')} 12:00"
     )
     next_day = f"{(date + ONE_DAY).strftime('%d.%m.%Y')} 00:00"
-    end_night_shift = f"{(date + ONE_DAY).strftime('%d.%m.%Y')} 05:00"
+    end_night_shift = f"{(date + ONE_DAY).strftime('%d.%m.%Y')} 04:00"
 
     start, end = night
     query = f"""
         SELECT 
-            ROUND((DATEDIFF(minute, MIN(t1.enter_time), MAX(t1.exit_time)))/60, 0, 1) as work_time, 
+            ROUND((DATEDIFF(minute, MAX(t1.enter_time), MAX(t1.exit_time)))/60, 0, 1) as work_time, 
             t1.FIO, 
             t1.HozOrgan, 
-            MIN(t1.enter_time), 
+            MAX(t1.enter_time), 
             MAX(t1.exit_time),
             CASE
-                WHEN MIN(t1.enter_time) >= MAX(t1.exit_time) OR MIN(t1.enter_time) is Null OR MAX(t1.exit_time) is Null
+                WHEN MAX(t1.enter_time) >= MAX(t1.exit_time) OR MAX(t1.enter_time) is Null OR MAX(t1.exit_time) is Null
                     THEN 'Ошибка'
                 ELSE 'ОК'
             END AS Correct,
@@ -122,18 +99,18 @@ def get_night_shift_query(date, point, add_condition):
             JOIN pList ON t2.HozOrgan = pList.ID
             WHERE (t2.TimeVal >= ?
             AND t2.TimeVal < ?
-            {add_condition}
+            AND pList.Name + ' ' + pList.FirstName + ' ' + pList.MidName in {tuple(employees)}
             AND t2.Event in (13, 29, 32)
             AND t2.DoorIndex in {point})
             ) AS t1
         GROUP BY t1.FIO, t1.HozOrgan
-        HAVING (DATEDIFF(day, MIN(t1.enter_time), MAX(t1.exit_time)) = 1) 
-                OR (MIN(t1.enter_time) >= ? AND MIN(t1.enter_time) <= ?);
+        HAVING (DATEDIFF(day, MAX(t1.enter_time), MAX(t1.exit_time)) = 1) 
+                OR (MAX(t1.enter_time) >= ? AND MAX(t1.enter_time) <= ?);
         """, start, end, next_day, end_night_shift
     return query
 
 
-def get_day_shift_query(date, point, add_condition):
+def get_day_shift_query(date, point, employees):
     day = (
         f"{date.strftime('%d.%m.%Y')} 06:00",
         f"{(date + ONE_DAY).strftime('%d.%m.%Y')}"
@@ -185,278 +162,211 @@ def get_day_shift_query(date, point, add_condition):
             JOIN pList ON t2.HozOrgan = pList.ID
             WHERE (t2.TimeVal >= ?
             AND t2.TimeVal < ?
-            {add_condition}
+            AND pList.Name + ' ' + pList.FirstName + ' ' + pList.MidName in {tuple(employees)}
             AND t2.Event in (13, 29, 32)
             AND t2.DoorIndex in {point})
             ) AS t1
         GROUP BY t1.FIO, t1.HozOrgan, DATEPART(day, t1.time)
-        HAVING MAX(t1.exit_time) > SMALLDATETIMEFROMPARTS (
+        HAVING MAX(t1.exit_time) >= SMALLDATETIMEFROMPARTS (
                                             YEAR(MAX(t1.exit_time)), 
                                             MONTH(MAX(t1.exit_time)), 
                                             DAY(MAX(t1.exit_time)), 
-                                            8, 00);
+                                            8, 00)
+                OR MAX(t1.exit_time) is Null;
         """, start, end
     return query
 
 
-def get_timesheets(
-        date: datetime = datetime.datetime.date(datetime.datetime.now() - ONE_DAY),
-        employers: Optional[Tuple] = None,
-        point: str = 'Турникет'
-):
-    cnxn = pyodbc.connect(
-        f'DRIVER=SQL Server;'
-        f'SERVER={BD_SERVER};'
-        f'DATABASE={BD_DATABASE};'
-        f'UID={BD_USERNAME};'
-        f'PWD={BD_PASSWORD}',
+def get_detail_error_query(date, employee_id):
+    day = (
+        f"{(date - ONE_DAY).strftime('%d.%m.%Y')}",
+        f"{(date + ONE_DAY + ONE_DAY).strftime('%d.%m.%Y')}"
     )
-    cursor = cnxn.cursor()
+    start, end = day
+    query = " ".join(f"""
+      SELECT *
+      FROM pLogData
+      WHERE HozOrgan = {employee_id} AND TimeVal >= '{start}' AND TimeVal < '{end}'
+      ORDER BY TimeVal
+    """.split())
+    return query
 
-    # добавляем условие по выбранным сотрудникам
-    if employers and len(employers) == 1:
-        employers = (employers[0], '')
-        add_condition = f"AND pList.Name + ' ' + pList.FirstName + ' ' + pList.MidName in {employers}"
-    elif employers and len(employers) > 1:
-        add_condition = f"AND pList.Name + ' ' + pList.FirstName + ' ' + pList.MidName in {employers}"
-    else:
-        add_condition = ''
 
-    queries = [
-        get_day_shift_query(date, POINTS[point], add_condition),
-        get_night_shift_query(date, POINTS[point], add_condition)
-    ]
-
+def get_timesheets(employees: Dict, date: datetime = YESTERDAY, point: str = 'Турникет'):
     # Добавляем всех выбранных сотрудников в словарь с нулевыми значениями
-    if employers:
-        result = {
-            employee: {
-                    'date': date,
-                    'skud_day_start_1': None,
-                    'skud_day_end_1': None,
-                    'skud_day_duration': None,
-                    'skud_night_start_1': None,
-                    'skud_night_end_1': None,
-                    'skud_night_duration': None,
-                }
-            for employee in employers
-        }
+    for employee in employees:
+        employees[employee].update({
+            'date': date,
+            'skud_day_start_1': None,
+            'skud_day_end_1': None,
+            'skud_day_duration': None,
+            'skud_night_duration': None,
+            "skud_error": False,
+        })
+    errors = []
+    # для будущих записей к БД не обращаемся
+    if date <= datetime.date.today():
+        queries = [
+            get_day_shift_query(date, POINTS[point], employees),
+            get_night_shift_query(date, POINTS[point], employees)
+        ]
+        # Обновляем словарь с сотрудниками данными из БД СКУД
+        for query in queries:
+            errors = execute_query(query=query, action=query_row_handler, result=employees, errors=errors)
+    return employees
+
+
+def query_row_handler(row, result, errors):
+    duration, employee, employee_id, enter_time, exit_time, msg, shift = row
+    employee = " ".join(employee.split())  # убираем лишние пробелы по краям и между ФИО
+    date = result[employee]['date']
+    if duration and duration < 0:
+        duration = None
+
+    if enter_time:
+        enter_time = make_aware(enter_time)
+    if exit_time:
+        exit_time = make_aware(exit_time)
+
+    if errors and employee in errors:
+        logger.info(f"Обновлено: {row}")
+        if msg != "Ошибка":
+            result[employee].update({
+                'skud_error': False,
+            })
+
+    if msg == 'Ошибка':
+        # получаем табель сотрудника за прошлый день,
+        # если время выхода совпадают, значит работал в ночь и это не ошибка
+        prev_timesheet = result[employee]['fio'].timesheet.filter(date=date - ONE_DAY)
+        if prev_timesheet and prev_timesheet[0].skud_day_end_1 == exit_time:
+            return errors
+        else:
+            errors.append(employee)
+            if not enter_time:
+                error_msg = "Ошибка входа:"
+            elif not exit_time:
+                error_msg = "Ошибка выхода:"
+            else:
+                error_msg = "Ошибка выход раньше входа:"
+            logger.warning(f"{error_msg} {row}")
+            result[employee].update({
+                'skud_error': True,
+                'skud_error_query': get_detail_error_query(date=date, employee_id=employee_id)
+            })
+
+    if shift == 'Дневная':
+        result[employee].update({
+            'skud_day_start_1': enter_time,
+            'skud_day_end_1': exit_time,
+            'skud_day_duration': duration,
+        })
+
+    elif shift == 'Ночная':
+
+        end_current_date = make_aware(datetime.datetime.combine(
+            date=date,
+            time=datetime.time(23, 59, 59)
+        ))
+
+        next_day = make_aware(datetime.datetime.combine(
+            date=date + ONE_DAY,
+            time=datetime.time(00, 00, 00)
+        ))
+
+        end_day_shift = make_aware(datetime.datetime.combine(
+            date=date,
+            time=datetime.time(22, 00, 00)
+        ))
+
+        end_night_shift = make_aware(datetime.datetime.combine(
+            date=date + ONE_DAY,
+            time=datetime.time(6, 00, 00)
+        ))
+
+        # с 18 до 7
+        if enter_time < end_day_shift and exit_time > end_night_shift:
+            result[employee].update({
+                'skud_day_duration': count_hours(start=enter_time, end=end_day_shift) + count_hours(
+                    start=end_night_shift, end=exit_time),
+                'skud_day_start_1': enter_time,
+                'skud_day_end_1': exit_time,
+                'skud_night_duration': count_hours(start=end_day_shift, end=end_night_shift) - 1,
+            })
+
+        # с 18 до 6
+        elif enter_time < end_day_shift and exit_time <= end_night_shift:
+            result[employee].update({
+                'skud_day_duration': count_hours(start=enter_time, end=end_day_shift),
+                'skud_day_start_1': enter_time,
+                'skud_day_end_1': exit_time,
+                'skud_night_duration': (count_hours(start=end_day_shift, end=exit_time) - 1) if count_hours(
+                    start=end_day_shift, end=exit_time) > 0 else 0,
+            })
+        # с 22 до 7
+        elif end_day_shift <= enter_time <= end_current_date and exit_time > end_night_shift:
+            result[employee].update({
+                'skud_day_duration': count_hours(start=end_night_shift, end=exit_time),
+                'skud_day_start_1': enter_time,
+                'skud_day_end_1': exit_time,
+                'skud_night_duration': count_hours(start=enter_time, end=end_night_shift) - 1,
+            })
+
+        # с 22 до 6
+        elif end_day_shift <= enter_time <= end_current_date and exit_time <= end_night_shift:
+            result[employee].update({
+                'skud_day_duration': 0,
+                'skud_day_start_1': enter_time,
+                'skud_day_end_1': exit_time,
+                'skud_night_duration': count_hours(start=enter_time, end=exit_time) - 1,
+            })
+        # с 00 до 7
+        elif enter_time >= next_day and exit_time > end_night_shift:
+            result[employee].update({
+                'skud_day_duration': count_hours(start=end_night_shift, end=exit_time),
+                'skud_day_start_1': enter_time,
+                'skud_day_end_1': exit_time,
+                'skud_night_duration': count_hours(start=enter_time, end=end_night_shift) - 1,
+            })
+        # с 00 до 6
+        elif enter_time >= next_day and exit_time <= end_night_shift:
+            result[employee].update({
+                'skud_day_duration': 0,
+                'skud_day_start_1': enter_time,
+                'skud_day_end_1': exit_time,
+                'skud_night_duration': count_hours(start=enter_time, end=exit_time) - 1 if count_hours(
+                    start=enter_time, end=exit_time) > 0 else 0,
+            })
+        else:
+            logger.error(f'Неучтенный период работы с {enter_time} до {exit_time}')
     else:
-        result = {}
+        logger.error(f'Неизвестный статус смены: {shift}')
+    return errors
 
-    errors_fios = []
 
-    # Обновляем словарь с сотрудниками данными из БД СКУД
-    for query in queries:
+def execute_query(query, action, result, errors):
+    start = time.time()
+    try:
+        cnxn = pyodbc.connect(
+            f'DRIVER=SQL Server;'
+            f'SERVER={BD_SERVER};'
+            f'DATABASE={BD_DATABASE};'
+            f'UID={BD_USERNAME};'
+            f'PWD={BD_PASSWORD}',
+        )
+        cursor = cnxn.cursor()
         cursor.execute(*query)
         row = cursor.fetchone()
         while row:
-            if row[5] == 'Ошибка':
-                errors_fios.append(row[1])
-
-            if row[6] == 'Дневная':
-                print('Дневная')
-                result[row[1].strip()] = {
-                    'date': date,
-                    'skud_day_start_1': row[3],
-                    'skud_day_end_1': row[4],
-                    'skud_day_duration': row[0],
-                    'skud_night_start_1': None,
-                    'skud_night_end_1': None,
-                    'skud_night_duration': None,
-                }
-
-            # TODO Добавить обработку ситуаций если пришел с 22 до 00 или с 00 до 6
-            elif row[6] == 'Ночная':
-                def count_hours(start, end):
-                    return int((end - start).total_seconds() / 3600)
-
-                end_current_date = datetime.datetime.combine(
-                    date=date,
-                    time=datetime.time(23, 59, 59)
-                )
-
-                next_day = datetime.datetime.combine(
-                    date=date + ONE_DAY,
-                    time=datetime.time(00, 00, 00)
-                )
-
-                end_day_shift = datetime.datetime.combine(
-                    date=date,
-                    time=datetime.time(22, 00, 00)
-                )
-                end_night_shift = datetime.datetime.combine(
-                    date=date + ONE_DAY,
-                    time=datetime.time(6, 00, 00)
-                )
-                # с 18 до 7
-                if row[3] < end_day_shift and row[4] > end_night_shift:
-                    print('Ночная с 18 до 7')
-                    result[row[1].strip()] = [
-                        {
-                            'date': date,
-                            'skud_day_start_1': row[3],
-                            'skud_day_end_1': end_day_shift,
-                            'skud_day_duration': count_hours(start=row[3], end=end_day_shift),
-                            'skud_night_start_1': end_day_shift,
-                            'skud_night_end_1': end_current_date,
-                            'skud_night_duration': count_hours(start=end_day_shift, end=next_day),
-                        },
-                        {
-                            'date': next_day,
-                            'skud_day_start_1': end_night_shift,
-                            'skud_day_end_1': row[4],
-                            'skud_day_duration': count_hours(start=end_night_shift, end=row[4]),
-                            'skud_night_start_1': next_day,
-                            'skud_night_end_1': end_night_shift,
-                            'skud_night_duration': count_hours(start=next_day, end=end_night_shift) - 1,
-                        }
-                    ]
-                # с 18 до 6
-                elif row[3] < end_day_shift and row[4] <= end_night_shift:
-                    print('Ночная с 18 до 6')
-                    result[row[1].strip()] = [
-                        {
-                            'date': date,
-                            'skud_day_start_1': row[3],
-                            'skud_day_end_1': end_day_shift,
-                            'skud_day_duration': count_hours(start=row[3], end=end_day_shift),
-                            'skud_night_start_1': end_day_shift,
-                            'skud_night_end_1': end_current_date,
-                            'skud_night_duration': count_hours(start=end_day_shift, end=next_day),
-                        },
-                        {
-                            'date': next_day,
-                            'skud_day_start_1': None,
-                            'skud_day_end_1': None,
-                            'skud_day_duration': None,
-                            'skud_night_start_1': next_day,
-                            'skud_night_end_1': end_night_shift,
-                            'skud_night_duration': count_hours(start=next_day, end=end_night_shift) - 1 if count_hours(
-                                start=next_day, end=end_night_shift) > 0 else 0,
-                        }
-                    ]
-                # с 22 до 7
-                elif end_day_shift <= row[3] <= end_current_date and row[4] > end_night_shift:
-                    print('Ночная с 22 до 7')
-                    result[row[1].strip()] = [
-                        {
-                            'date': date,
-                            'skud_day_start_1': None,
-                            'skud_day_end_1': None,
-                            'skud_day_duration': None,
-                            'skud_night_start_1': end_day_shift,
-                            'skud_night_end_1': end_current_date,
-                            'skud_night_duration': count_hours(start=end_day_shift, end=next_day),
-                        },
-                        {
-                            'date': next_day,
-                            'skud_day_start_1': end_night_shift,
-                            'skud_day_end_1': row[4],
-                            'skud_day_duration': count_hours(start=end_night_shift, end=row[4]),
-                            'skud_night_start_1': next_day,
-                            'skud_night_end_1': end_night_shift,
-                            'skud_night_duration': count_hours(start=next_day, end=end_night_shift) - 1,
-                        }
-                    ]
-                # с 22 до 6
-                elif end_day_shift <= row[3] <= end_current_date and row[4] <= end_night_shift:
-                    print('Ночная с 22 до 6')
-                    result[row[1].strip()] = [
-                        {
-                            'date': date,
-                            'skud_day_start_1': None,
-                            'skud_day_end_1': None,
-                            'skud_day_duration': None,
-                            'skud_night_start_1': end_day_shift,
-                            'skud_night_end_1': end_current_date,
-                            'skud_night_duration': count_hours(start=end_day_shift, end=next_day),
-                        },
-                        {
-                            'date': next_day,
-                            'skud_day_start_1': None,
-                            'skud_day_end_1': None,
-                            'skud_day_duration': None,
-                            'skud_night_start_1': next_day,
-                            'skud_night_end_1': end_night_shift,
-                            'skud_night_duration': count_hours(start=next_day, end=end_night_shift) - 1,
-                        }
-                    ]
-                # с 00 до 7
-                elif row[3] >= next_day and row[4] > end_night_shift:
-                    print('Ночная с 00 до 7')
-                    result[row[1].strip()] = {
-                        'date': next_day,
-                        'skud_day_start_1': end_night_shift,
-                        'skud_day_end_1': row[4],
-                        'skud_day_duration': count_hours(start=end_night_shift, end=row[4]),
-                        'skud_night_start_1': next_day,
-                        'skud_night_end_1': end_night_shift,
-                        'skud_night_duration': count_hours(start=next_day, end=end_night_shift) - 1,
-                    }
-                # с 00 до 6
-                elif row[3] >= next_day and row[4] <= end_night_shift:
-                    print('Ночная с 00 до 6')
-                    result[row[1].strip()] = {
-                        'date': next_day,
-                        'skud_day_start_1': None,
-                        'skud_day_end_1': None,
-                        'skud_day_duration': None,
-                        'skud_night_start_1': next_day,
-                        'skud_night_end_1': end_night_shift,
-                        'skud_night_duration': count_hours(start=next_day, end=end_night_shift) - 1 if count_hours(
-                            start=next_day, end=end_night_shift) > 0 else 0,
-                    }
-                else:
-                    raise Exception(f'Неучтенный период работы с {row[3]} до {row[4]}')
-            else:
-                print(f'Неизвестный статус смены: {row[6]}')
-            print(date, row)
+            errors = action(row, result, errors)
             row = cursor.fetchone()
-    cnxn.close()
-    # если выбрана проверка всех сотрудников, то в ошибки добавляем отметившихся,
-    # но отсутствующих на данной точке доступа
-    if not employers:
-        for fio in get_all_fios(date):
-            if fio[1] not in result and fio[0] != 2:
-                data = (None, fio[1], fio[0], None, None, 'Ошибка', 'Дневная')
-                errors_fios.append(data)
-    return result
+        logger.info(f"Завершение запроса в БД СКУД. Время выполнения {time.time() - start}")
+        return errors
+    except Exception:
+        logger.exception(f"Исключение при работе с БД СКУД")
+    finally:
+        cnxn.close()
 
 
-def get_all_fios(date: datetime = datetime.datetime.date(datetime.datetime.now() - ONE_DAY)):
-    day = (
-        f"{date.strftime('%d.%m.%Y')}",
-        f"{(date + ONE_DAY).strftime('%d.%m.%Y')}"
-    )
-    start, end = day
-    cnxn = pyodbc.connect(
-        f'DRIVER=SQL Server;'
-        f'SERVER={BD_SERVER};'
-        f'DATABASE={BD_DATABASE};'
-        f'UID={BD_USERNAME};'
-        f'PWD={BD_PASSWORD}',
-    )
-    cursor = cnxn.cursor()
-
-    query = f"""
-            SELECT
-                DISTINCT (pLogData.HozOrgan),
-                pList.Name + ' ' + pList.FirstName + ' ' + pList.MidName AS FIO
-            FROM pLogData
-            JOIN pList ON pLogData.HozOrgan = pList.ID
-            WHERE pLogData.TimeVal >= ?
-            AND pLogData.TimeVal < ?
-        """, start, end
-    result = []
-    cursor.execute(*query)
-    row = cursor.fetchone()
-    while row:
-        result.append((row[0], row[1]))
-        row = cursor.fetchone()
-    cnxn.close()
-    return result
-
-
-if __name__ == "__main__":
-    get_timesheets()
+def count_hours(start, end):
+    return int((end - start).total_seconds() / 3600)

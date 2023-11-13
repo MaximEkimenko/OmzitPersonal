@@ -57,66 +57,19 @@ class EmployeeAdmin(admin.ModelAdmin):
 
 @admin.register(Timesheet)
 class TimesheetAdmin(admin.ModelAdmin):
-    fieldsets = [
-        (
-            None,
-            {
-                "fields": [
-                    "fio",
-                    "day_status",
-                    "date",
-                ],
-            },
-        ),
-        (
-            "Дневная смена",
-            {
-                "fields": [
-                    "skud_day_start_1",
-                    "skud_day_end_1",
-                    "skud_day_start_2",
-                    "skud_day_end_2",
-                    "skud_day_duration",
-                    "boss_day_duration",
-                    "is_day_corrected",
-                ],
-                "classes": ["collapse"],
-            },
-        ),
-        (
-            "Ночная смена",
-            {
-                "fields": [
-                    "skud_night_start_1",
-                    "skud_night_end_1",
-                    "skud_night_start_2",
-                    "skud_night_end_2",
-                    "skud_night_duration",
-                    "boss_night_duration",
-                    "is_night_corrected",
-                ],
-                "classes": ["collapse"],
-            },
-        ),
-    ]
     list_display = [
         "fio",
         "day_status",
         "date",
         "skud_day_start_1",
         "skud_day_end_1",
-        "skud_day_start_2",
-        "skud_day_end_2",
         "skud_day_duration",
+        "skud_night_duration",
         "boss_day_duration",
         "is_day_corrected",
-        "skud_night_start_1",
-        "skud_night_end_1",
-        "skud_night_start_2",
-        "skud_night_end_2",
-        "skud_night_duration",
         "boss_night_duration",
         "is_night_corrected",
+        "skud_error",
     ]
     list_display_links = ["fio"]
     search_fields = ["fio"]
@@ -130,6 +83,7 @@ class TimesheetAdmin(admin.ModelAdmin):
         "boss_night_duration",
         "is_day_corrected",
         "is_night_corrected",
+        "skud_error",
     ]
     list_editable = [
         "boss_day_duration",

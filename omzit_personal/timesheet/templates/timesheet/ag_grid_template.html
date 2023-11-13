@@ -76,8 +76,8 @@
                     "{{ day }}" : "{{ value.0 }}",
 
                     "night{{ day }}" : "{{ value.1 }}",
-                    "enter{{ day }}" : "{{ value.2.skud_day_start_1 }}",
-                    "out{{ day }}" : "{{ value.2.skud_day_end_1 }}",
+                    "enter{{ day }}" : "{{ value.2.skud_day_start_1|date:"H:i:s" }}",
+                    "out{{ day }}" : "{{ value.2.skud_day_end_1|date:"H:i:s" }}",
 
                     {% endfor %}
                 },

@@ -3,7 +3,7 @@ import logging
 import os
 import time
 
-from typing import Dict
+from typing import Dict, Tuple
 
 import pyodbc
 from django.core.management import BaseCommand
@@ -36,13 +36,13 @@ class Command(BaseCommand):
         get_skud_data(date_start=date_start, date_end=date_end)
 
 
-def get_skud_data(date_start=YESTERDAY, date_end=YESTERDAY):
+def get_skud_data(date_start=YESTERDAY, date_end=YESTERDAY, point=POINTS["Турникет"]):
     employees = {employee.fio: {"fio": employee} for employee in Employee.objects.all()}
     # интервал выгрузки
     date = date_start
     while date <= date_end:
         logger.info(f"Получение табеля за {date}...")
-        timesheets = get_timesheets(employees=employees, date=date)
+        timesheets = get_timesheets(employees=employees, date=date, point=point)
         created = updated = 0
         for employee, data in timesheets.items():
             try:
@@ -196,7 +196,7 @@ def get_detail_error_query(date, employee_id):
     return query
 
 
-def get_timesheets(employees: Dict, date: datetime = YESTERDAY, point: str = 'Турникет'):
+def get_timesheets(employees: Dict, date: datetime, point: Tuple):
     # Добавляем всех выбранных сотрудников в словарь с нулевыми значениями
     for employee in employees:
         employees[employee].update({
@@ -211,8 +211,8 @@ def get_timesheets(employees: Dict, date: datetime = YESTERDAY, point: str = 'Т
     # для будущих записей к БД не обращаемся
     if date <= datetime.date.today():
         queries = [
-            get_day_shift_query(date, POINTS[point], employees),
-            get_night_shift_query(date, POINTS[point], employees)
+            get_day_shift_query(date, point, employees),
+            get_night_shift_query(date, point, employees)
         ]
         # Обновляем словарь с сотрудниками данными из БД СКУД
         for query in queries:

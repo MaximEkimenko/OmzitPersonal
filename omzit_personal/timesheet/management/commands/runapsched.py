@@ -40,12 +40,22 @@ class Command(BaseCommand):
         scheduler.add_job(
             get_skud_data,
             trigger=CronTrigger(day="*/1", hour="00"),  # Каждый день в 00:00
-            id="Получение данных со СКУД за день",
+            id="Получение данных со СКУД (дневная смена)",
             misfire_grace_time=60,  # отсрочка 60 сек
             max_instances=1,
             replace_existing=True,
         )
-        logger.info("Добавлена задача ежедневного получения данных со СКУД")
+        logger.info("Добавлена задача ежедневного получения данных со СКУД в 00:00 (дневная смена)")
+
+        scheduler.add_job(
+            get_skud_data,
+            trigger=CronTrigger(day="*/1", hour="12"),  # Каждый день в 12:00
+            id="Получение данных со СКУД (ночная смена)",
+            misfire_grace_time=60,  # отсрочка 60 сек
+            max_instances=1,
+            replace_existing=True,
+        )
+        logger.info("Добавлена задача ежедневного получения данных со СКУД в 12:00 (ночная смена)")
 
         logger.info("Запуск планировщика...")
         scheduler.start()

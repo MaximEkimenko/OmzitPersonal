@@ -30,6 +30,8 @@ DEBUG = os.getenv("DJANGO_DEBUG", "0") == "1"
 
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS").split()
 
+INTERNAL_IPS = ["127.0.0.1", ]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -81,12 +83,6 @@ WSGI_APPLICATION = 'omzit_personal.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -195,5 +191,5 @@ LOGGING = {
     },
 }
 
-APSCHEDULER_DATETIME_FORMAT = 'd.m.Y H:M:S'
+APSCHEDULER_DATETIME_FORMAT = 'd.m.Y H:i:s'
 APSCHEDULER_RUN_NOW_TIMEOUT = 25

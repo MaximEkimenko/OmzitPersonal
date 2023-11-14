@@ -113,6 +113,11 @@ class Timesheet(models.Model):
         ordering = ["date"]
         unique_together = ["fio", "date"]
 
+    def save(self, *args, **kwargs):
+        self.is_day_corrected = True if self.boss_day_duration else False
+        self.is_night_corrected = True if self.boss_night_duration else False
+        super().save(*args, **kwargs)
+
 
 class DayStatus(models.Model):
     """ Модель статуса сотрудника на день """

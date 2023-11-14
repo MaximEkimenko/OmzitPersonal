@@ -16,7 +16,7 @@ class TimesheetListView(ListView):
     now_month = datetime.datetime.now().month
     now_month_word = now.strftime('%B')
 
-    queryset = Timesheet.objects.filter(date__month=now_month).order_by('date')
+    queryset = Timesheet.objects.filter(date__month=now_month).order_by('date').prefetch_related("fio")
     template_name = "timesheet/ag_grid_template.html"
 
     def get_context_data(self, **kwargs):

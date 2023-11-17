@@ -26,7 +26,7 @@ class Command(BaseCommand):
             if isinstance(date, str):
                 date = datetime.strptime(date, "%d.%m.%Y")
             data = {
-                "fio": row[0].strip(),
+                "fio": " ".join(row[0].split()),
                 "job_title": row[1][:(row[1].find('Ц'))].strip(),
                 "division": row[1][(row[1].find('Ц')):].strip(),
                 "rank_title": row[2],

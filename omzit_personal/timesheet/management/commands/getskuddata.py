@@ -21,10 +21,15 @@ ONE_DAY = datetime.timedelta(days=1)
 YESTERDAY = datetime.datetime.date(datetime.datetime.now() - ONE_DAY)
 
 # данные для подключения к БД
-BD_SERVER = os.getenv("SKUD_DB_HOST")
-BD_DATABASE = os.getenv("SKUD_DB_NAME")
-BD_USERNAME = os.getenv("SKUD_DB_USER")
-BD_PASSWORD = os.getenv("SKUD_DB_PASSWORD")
+# BD_SERVER = os.getenv("SKUD_DB_HOST")
+# BD_DATABASE = os.getenv("SKUD_DB_NAME")
+# BD_USERNAME = os.getenv("SKUD_DB_USER")
+# BD_PASSWORD = os.getenv("SKUD_DB_PASSWORD")
+
+BD_SERVER = '192.168.11.200'
+BD_DATABASE = 'Orion15.11.2022'
+BD_USERNAME = 'ASUP'
+BD_PASSWORD = 'qC4HptD'
 
 
 class Command(BaseCommand):

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -6,16 +7,19 @@
 
         <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
         <!-- <script src="main.js"></script> -->
-        <!-- <script src="localisation.js"></script> -->
+        <script src="{% static 'timesheet/js/localisation.js' %}"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" />
+        <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" /> -->
+
+        <link type="text/css" href="{% static 'timesheet/css/ag-theme-alpine.css' %}" rel="stylesheet" />
+        <!-- timesheet -->
         <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-balham.css" /> -->
         <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-balham-dark.css" /> -->
         <title>Табель</title>
     </head>
     <body>
         <h1>Табель</h1>
-        <p>Табель подразделения за {{ timesheets.2.now_month.1 }}</p>
+        <p>Табель подразделения за {{ timesheets.0.now_month.1 }}</p>
         <form action="" method="post" enctype="multipart/form-data">
             <!-- {% csrf_token %} -->
             <div id="myGrid" style="width: 3000px" class="ag-theme-balham"></div>
@@ -31,7 +35,7 @@
         </form>
         <button onclick="onBtnUpdate()">Показать данные для отправки</button>
         <script type="text/javascript">
-            // const localeText = AG_GRID_LOCALE_EN;
+            const localeText = AG_GRID_LOCALE_EN;
             const date = new Date()
             const month = date.getMonth() + 1
             let today = date.getDate()
@@ -46,7 +50,13 @@
             const min_hours = 1;
             const max_hours = 12;
             const gridOptions = {
-                // each entry here represents one column
+                rowSelection: "multiple",
+                animateRows: true,
+                columnHoverHighlight: true,
+                onFirstDataRendered: autoSizeAll, // инициализация авторазмера при событии первого рендера
+                onCellValueChanged: edit_done, // обновление ячеек при событии редактирования
+                localeText: localeText,
+
                 defaultColDef: {
                     sortable: true,
                     editable: true,
@@ -156,12 +166,8 @@
                     },
                     {% endfor %}
                 ],
-                rowSelection: "multiple",
-                animateRows: true,
-                columnHoverHighlight: true,
-                // localeText: localeText,
-                onFirstDataRendered: autoSizeAll, // инициализация авторазмера при событии первого рендера
-                onCellValueChanged: edit_done, // обновление ячеек при событии редактирования
+
+
             };
             // приминение стилей
             function cellStyle(params) {

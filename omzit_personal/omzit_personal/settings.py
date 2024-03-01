@@ -26,9 +26,12 @@ load_dotenv()
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DJANGO_DEBUG", "0") == "1"
+# DEBUG = os.getenv("DJANGO_DEBUG", "0") == "1"
 
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS").split()
+DEBUG = True
+
+# ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS").split()
+ALLOWED_HOSTS = ['192.168.8.163', '192.168.8.30', '127.0.0.1']
 
 INTERNAL_IPS = ["127.0.0.1", ]
 
@@ -65,7 +68,7 @@ ROOT_URLCONF = 'omzit_personal.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates', os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -80,21 +83,32 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'omzit_personal.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv("DJANGO_DB_NAME"),
-        'USER': os.getenv("DJANGO_DB_USER"),
-        'PASSWORD': os.getenv("DJANGO_DB_PASSWORD"),
-        'HOST': os.getenv("DJANGO_DB_HOST"),
-        # 'HOST': '192.168.8.163'
+        'NAME': 'personal',
+        'USER': 'admin',
+        'PASSWORD': 'Epass1',
+        'HOST': '127.0.0.1',
+        # 'HOST': '192.168.8.163',
         # 'HOST': '192.168.8.30'
         'PORT': '',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv("DJANGO_DB_NAME"),
+#         'USER': os.getenv("DJANGO_DB_USER"),
+#         'PASSWORD': os.getenv("DJANGO_DB_PASSWORD"),
+#         'HOST': os.getenv("DJANGO_DB_HOST"),
+#         # 'HOST': '192.168.8.163'
+#         # 'HOST': '192.168.8.30'
+#         'PORT': '',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -128,11 +142,20 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / "static"
+# STATIC_URL = 'static/'
+# STATIC_ROOT = BASE_DIR / "static"
 
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+STATIC_URL = r'/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+
+
+# MEDIA_URL = "media/"
+# MEDIA_ROOT = BASE_DIR / "media"
+
+MEDIA_URL = '/files/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'files')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -141,55 +164,55 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "console": {
-            "()": "colorlog.ColoredFormatter",
-            "format": "%(blue)s%(asctime)s: %(log_color)s%(levelname)-8s%(reset)s %(module)-4s %(lineno)-4s %(message)s",
-            "log_colors": {
-                'DEBUG': 'cyan',
-                'INFO': 'green',
-                'WARNING': 'yellow',
-                'ERROR': 'red',
-                'CRITICAL': 'red,bg_white',
-            },
-        },
-        "file": {
-            "format": "%(asctime)s %(levelname)-12s %(module)-12s %(lineno)-12s %(message)s",
-        }
-    },
-    "handlers": {
-        "console": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
-            "formatter": "console",
-        },
-        "file_debug": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "formatter": "file",
-            "filename": os.path.join("logs", "debug.log"),
-        },
-        "file_prod": {
-            "level": "INFO",
-            "class": "logging.FileHandler",
-            "formatter": "file",
-            "filename": os.path.join("logs", "production.log"),
-        }
-    },
-    "loggers": {
-        "logger": {
-            "handlers": ["console", "file_prod"],
-            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
-        },
-        "": {
-            "handlers": ["file_debug"],
-            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
-        },
-    },
-}
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "console": {
+#             "()": "colorlog.ColoredFormatter",
+#             "format": "%(blue)s%(asctime)s: %(log_color)s%(levelname)-8s%(reset)s %(module)-4s %(lineno)-4s %(message)s",
+#             "log_colors": {
+#                 'DEBUG': 'cyan',
+#                 'INFO': 'green',
+#                 'WARNING': 'yellow',
+#                 'ERROR': 'red',
+#                 'CRITICAL': 'red,bg_white',
+#             },
+#         },
+#         "file": {
+#             "format": "%(asctime)s %(levelname)-12s %(module)-12s %(lineno)-12s %(message)s",
+#         }
+#     },
+#     "handlers": {
+#         "console": {
+#             "level": "DEBUG",
+#             "class": "logging.StreamHandler",
+#             "formatter": "console",
+#         },
+#         "file_debug": {
+#             "level": "DEBUG",
+#             "class": "logging.FileHandler",
+#             "formatter": "file",
+#             "filename": os.path.join("logs", "debug.log"),
+#         },
+#         "file_prod": {
+#             "level": "INFO",
+#             "class": "logging.FileHandler",
+#             "formatter": "file",
+#             "filename": os.path.join("logs", "production.log"),
+#         }
+#     },
+#     "loggers": {
+#         "logger": {
+#             "handlers": ["console", "file_prod"],
+#             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+#         },
+#         "": {
+#             "handlers": ["file_debug"],
+#             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+#         },
+#     },
+# }
 
 APSCHEDULER_DATETIME_FORMAT = 'd.m.Y H:i:s'
 APSCHEDULER_RUN_NOW_TIMEOUT = 25

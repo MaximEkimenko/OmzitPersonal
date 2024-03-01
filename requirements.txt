@@ -8,8 +8,10 @@ Django==4.2.6
 django-filter==23.3
 et-xmlfile==1.1.0
 openpyxl==3.1.2
-psycopg2-binary==2.9.9
+
 pyodbc==5.0.1
 python-dotenv==1.0.0
 sqlparse==0.4.4
 tzdata==2023.3
+
+SQLAlchemy~=2.0.27

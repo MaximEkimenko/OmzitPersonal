@@ -6,9 +6,9 @@
 
         <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
         <script src="main.js"></script>
-        <script src="localisation.js"></script>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" />
+        <!-- <script src="localisation.js"></script> -->
+        <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" /> -->
+        <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css" /> -->
         <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-balham.css" /> -->
         <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-balham-dark.css" /> -->
         <title>Табель</title>
@@ -29,7 +29,7 @@
         </form>
         <button onclick="onBtnUpdate()">Показать данные для отправки</button>
         <script type="text/javascript">
-            const localeText = AG_GRID_LOCALE_EN;
+            // const localeText = AG_GRID_LOCALE_EN;
             const today = "4";
             const min_hours = 1;
             const max_hours = 12;
@@ -41,7 +41,7 @@
                     filter: true,
                     resizable: true,
                     width: 100,
-                    cellStyle: cellStyle,
+                    // cellStyle: cellStyle,
                     editable: (params) => params.column.colId >= today - 1, // коректировка в прошлом запрещена
 
                     // flex: 1,
@@ -200,7 +200,7 @@
                 rowSelection: "multiple",
                 animateRows: true,
                 columnHoverHighlight: true,
-                localeText: localeText,
+                // localeText: localeText,
                 onFirstDataRendered: autoSizeAll, // инициализация авторазмера при событии первого рендера
                 onCellValueChanged: edit_done, // обновление ячеек при событии редактирования
             };

@@ -4,6 +4,7 @@ from sqlalchemy import MetaData, DateTime, Integer, String, SmallInteger, BigInt
 from database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import engine, session_factory
+from typing import List
 
 
 intpk = Annotated[int, mapped_column(BigInteger, primary_key=True, autoincrement=True, index=True)]
@@ -15,6 +16,9 @@ class Employee(Base):
     Модель сотрудника
     """
     __tablename__ = 'alchemy_test1'
+    __table_args__ = {
+        'info': {'use_autogenerate': True}
+    }
     id: Mapped[intpk]
     employment_date: Mapped[str] = mapped_column(String)  # Дата принятия на работу
     fired_date: Mapped[date_type]  # дата увольнения
@@ -34,17 +38,22 @@ class Employee(Base):
     KTR: Mapped[Optional[float]] = mapped_column(Float)  # значение КТР
     has_NAX: Mapped[Optional[bool]] = mapped_column(Boolean)  # есть НАКС
     KNAX: Mapped[Optional[float]] = mapped_column(Float)  # значение коэффициента НАКС
-    timesheets = relationship("Timesheet", back_populates="employee")
+    timesheets: Mapped[List["Timesheet"]] = relationship( back_populates="employee")
+    # timesheets = relationship("Timesheet", back_populates="employee")
 
 
 class Timesheet(Base):
     """ Модель табеля сотрудника """
     __tablename__ = 'alchemy_test2'
+    __table_args__ = {
+        'info': {'use_autogenerate': True}
+    }
     id: Mapped[intpk]
     date: Mapped[date_type]  # дата увольнения
     # фио сотрудник
-    employee_id: Mapped[str] = mapped_column(BigInteger, ForeignKey("alchemy_test1.id", ondelete='CASCADE'))
-    employee = relationship(Employee, back_populates='timesheets')
+    employee_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("alchemy_test1.id", ondelete='CASCADE'))
+    employee: Mapped["Employee"] = relationship(back_populates='timesheets')
+    # employee = relationship(Employee, back_populates='timesheets')
     day_status: Mapped[Optional[str]] = mapped_column(String(10))  # статус работы в день (больничный, отпуск etc)
     # Поля СКУД
     skud_day_start_1: Mapped[date_type]   # вход день
@@ -60,5 +69,6 @@ class Timesheet(Base):
 
 
 if __name__ == '__main__':
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
+    pass
+    # Base.metadata.drop_all(bind=engine)
+    # Base.metadata.create_all(bind=engine)

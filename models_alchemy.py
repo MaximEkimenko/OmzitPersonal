@@ -15,20 +15,23 @@ class Employee(Base):
     """
     Модель сотрудника
     """
-    __tablename__ = 'alchemy_test1'
+    __tablename__ = 'employee_test'
     __table_args__ = {
         'info': {'use_autogenerate': True}
     }
     id: Mapped[intpk]
-    employment_date: Mapped[str] = mapped_column(String)  # Дата принятия на работу
-    fired_date: Mapped[date_type]  # дата увольнения
+    employment_date: Mapped[Optional[date_type]]  # Дата принятия на работу
+    fired_date: Mapped[Optional[date_type]]  # дата увольнения
+    birthday_date = Mapped[Optional[date_type]]  # дата рождения
+
     fio: Mapped[str] = mapped_column(String)  # ФИО
     job_title: Mapped[Optional[str]] = mapped_column(String(100))  # должность
     rank_title: Mapped[Optional[str]] = mapped_column(SmallInteger)  # разряд
-    tabel_number: Mapped[Optional[str]] = mapped_column(String(20))  # табельный номер
+    tabel_number: Mapped[Optional[str]] = mapped_column(String(30))  # табельный номер
+    tabel_filename: Mapped[Optional[str]] = mapped_column(String(30))  # имя файла табеля 1С
     tariff_rate: Mapped[Optional[str]] = mapped_column(Integer)  # тарифная ставка
     division: Mapped[Optional[str]] = mapped_column(String(30))  # подразделение
-    # status: Mapped[str] = mapped_column(String(30), nullable=True)  # статус ?
+    status: Mapped[str] = mapped_column(String(30), nullable=True)  # статус ?
     schedule: Mapped[Optional[str]] = mapped_column(SmallInteger)  # график работы
     shift_hours: Mapped[Optional[str]] = mapped_column(SmallInteger)  # часов в смене
     skud_access: Mapped[Optional[str]] = mapped_column(SmallInteger)  # точка доступа скуд
@@ -38,18 +41,27 @@ class Employee(Base):
     KTR: Mapped[Optional[float]] = mapped_column(Float)  # значение КТР
     has_NAX: Mapped[Optional[bool]] = mapped_column(Boolean)  # есть НАКС
     KNAX: Mapped[Optional[float]] = mapped_column(Float)  # значение коэффициента НАКС
-    timesheets: Mapped[List["Timesheet"]] = relationship( back_populates="employee")
+    timesheets: Mapped[List["Timesheet"]] = relationship(back_populates="employee")
+    # данные для 1С
+    fio_responsible = Mapped[Optional[str]]  # фио отвественного
+    INN_employee = Mapped[Optional[BigInteger]]  # ИНН сотрудника
+    INN_responsible = Mapped[Optional[BigInteger]]  # ИНН ответственного
+    INN_company = Mapped[Optional[BigInteger]]  # ИНН юр.лица
+
+
+
+
     # timesheets = relationship("Timesheet", back_populates="employee")
 
 
 class Timesheet(Base):
     """ Модель табеля сотрудника """
-    __tablename__ = 'alchemy_test2'
+    __tablename__ = 'timesheet_test'
     __table_args__ = {
         'info': {'use_autogenerate': True}
     }
     id: Mapped[intpk]
-    date: Mapped[date_type]  # дата увольнения
+    date: Mapped[date_type]  # дата работы сотрудника
     # фио сотрудник
     employee_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("alchemy_test1.id", ondelete='CASCADE'))
     employee: Mapped["Employee"] = relationship(back_populates='timesheets')

@@ -1,9 +1,9 @@
 import xml.etree.ElementTree as element_tree
 import json
 from copy import copy
-
-from openpyxl import Workbook
+import pandas as pd
 import os
+from m_logger_settings import logger
 
 
 def xml_accumulate(xml_path: str) -> list:
@@ -29,24 +29,21 @@ def xml_accumulate(xml_path: str) -> list:
     return all_roots
 
 
-def xml_to_xlsx(xml_path: str, xlsx_file: str = None, json_file: str = None) -> False or dict:
-    # TODO добавить директории сохранения файлов xlsx_file json_file в код
+def xml_zup_read(xml_path: str, xlsx_file: str, json_file: str) -> list or False:
     """
     Функция прообразует все файлы xml из директории xml_path в xlsx и json
-    :param xml_path: пут ьк директории xml
-    :param json_file:  путь к json файлу
-    :param xlsx_file: путь к xlsx
-    :return: словарь вида {ФИО: {поле: значение}}
+    :param xml_path: путь к исходной директории xml
+    :param json_file:  путь к результирующему json файлу
+    :param xlsx_file: путь к результирующему xlsx
+    :return: список
     """
-    # TODO подключить pandas для работы с xlsx
-    wb = Workbook()
-    ws = wb.active
     # получение списка всех xml
-    # TODO переопределить all_roots для случая ручного ввода имен файлов
     try:
         all_roots = xml_accumulate(xml_path)
+        logger.info(f"Все xml в {xml_path} удачно прочитаны.")
     except Exception as e:
-        print(e, ' !xml read problem!')
+        logger.error(f"Ошибка чтения xml файлов в директории {xml_path}.")
+        logger.exception(e)
         return False
     # количество полей
     uniq_fields = set()
@@ -55,8 +52,7 @@ def xml_to_xlsx(xml_path: str, xlsx_file: str = None, json_file: str = None) -> 
     iter_step = len((list(uniq_fields)))  # шаг одного фио
     # шапка
     fields = [elem.tag for elem in all_roots[0:iter_step]]
-    fields.append('ИсходныйФайл')
-    ws.append(fields)
+    fields.append('ИсходныйФайл')  # дополнительное поле имени исходного файла
     # заполнение excel и словаря json
     start = 0  # индекс начала
     result_dict = dict()
@@ -70,31 +66,43 @@ def xml_to_xlsx(xml_path: str, xlsx_file: str = None, json_file: str = None) -> 
                 if len(line) == iter_step:
                     line.append(all_roots[elem].attrib['file'])
             start += iter_step  # увеличение индекса
-            ws.append(line)  # запись в excel
             result_dict.update({key: value for key, value in zip(fields[:], line[:])})  # запись в словарь
             result_list.append(copy(result_dict))
+        logger.info("Переформатирование xml в xlsx и json прошло успешно.")
     except Exception as e:
-        print(e, ' xml to xlsx and json reformat problem!')
+        logger.error(f'Ошибка переформатирования xml в xlsx и jsonю')
+        logger.exception(e)
         return False
-    # сохранение excel
+    #  сохранение в excel
+    # xlsx_save_file = os.path.join(xml_path, xlsx_file)
     try:
-        xlsx_save_file = os.path.join(xml_path, r'reformat\zup_fios_json_1C.xlsx')
-        wb.save(xlsx_save_file)
+        df = pd.DataFrame(result_list)
+        df.to_excel(xlsx_file, index=False)
+        logger.info(f"Сохранение EXCEL файла {xlsx_file} прошло успешно.")
     except Exception as e:
-        print(e, ' xlsx save problem!')
+        logger.error(f"Ошибка сохранения Excel файла {xlsx_file}.")
+        logger.exception(e)
         return False
-    wb.close()
+    #  сохранение в json
+    # json_save_file = os.path.join(xml_path, json_file)
     try:
-        xlsx_save_file = os.path.join(xml_path, r'reformat\zup_fios_json_1C.json')
-        with open(xlsx_save_file, "w", encoding='utf-8') as file:
+        with open(json_file, "w", encoding='utf-8') as file:
             json.dump(result_list, file, indent=2, ensure_ascii=False)
+        logger.info(f"Сохранение JSON файла {json_file} прошло успешно.")
     except Exception as e:
-        print(e, ' JSON save problem!')
+        logger.error(f"Ошибка сохранения JSON файла {json_file}")
+        logger.exception(e)
         return False
-    return result_dict
+    return result_list
 
 
-def xml_tabel_read(xml_file, xml_path):
+def xml_tabel_read(xml_file: str, json_file: str) -> list:
+    """
+    Функция создает JSON файл из xml файла табеля
+    :param xml_file: имя исходного xml файла
+    :param json_file: имя результирующего json файла
+    :return: список
+    """
     tree = element_tree.parse(xml_file)
     employee = dict()
     employees = []
@@ -103,14 +111,23 @@ def xml_tabel_read(xml_file, xml_path):
             for key in table.keys():
                 employee.update({key: table.get(key)})
             employees.append(copy(employee))
-    save_file = os.path.join(xml_path, r'reformat\tabel_fios_json_1C.json')
-    with open(save_file, 'w', encoding='utf-8') as json_file:
-        json.dump(employees, json_file, indent=2, ensure_ascii=False)
+    # save_file = os.path.join(xml_path, json_file)
+    try:
+        with open(json_file, 'w', encoding='utf-8') as j_file:
+            json.dump(employees, j_file, indent=2, ensure_ascii=False)
+        logger.info(f"Файл {json_file} сохранён успешно.")
+    except Exception as e:
+        logger.error(f"Ошибка сохранения {json_file}.")
+        logger.exception(e)
+    return employees
 
 
 if __name__ == '__main__':
     path_tst = r'M:\Xranenie\Reportbolid'
-    xml_to_xlsx(xml_path=path_tst)
+    xlsx_tst = r'reformat\zup_fios_json_1C.xlsx'
+    json_tst = r'reformat\zup_fios_json_1C.json'
+    json_tabel_tst = r'reformat\tabel_fios_json_1C.json'
+    xml_zup_read(xml_path=path_tst, xlsx_file=xlsx_tst, json_file=json_tst)
     xml_tabel = 'ТабельЕРП(Новый).xml'
-    xml_tabel_read(xml_tabel, path_tst)
+    xml_tabel_read(xml_file=xml_tabel, xml_path=path_tst, json_file=json_tabel_tst)
 

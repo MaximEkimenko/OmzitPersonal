@@ -11,7 +11,7 @@ database_url = f'postgresql+psycopg://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'
 
 engine = create_engine(
     url=database_url,
-    echo=True,
+    echo=False,
     max_overflow=10
 )
 

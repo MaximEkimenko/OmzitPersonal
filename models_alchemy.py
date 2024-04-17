@@ -16,55 +16,50 @@ class Employee(Base):
     Модель сотрудника
     """
     __tablename__ = 'employee_test'
-    __table_args__ = {
-        'info': {'use_autogenerate': True}
-    }
+    # __table_args__ = {
+    #     'info': {'use_autogenerate': True}
+    # }
     id: Mapped[intpk]
     employment_date: Mapped[Optional[date_type]]  # Дата принятия на работу
     fired_date: Mapped[Optional[date_type]]  # дата увольнения
     birthday_date = Mapped[Optional[date_type]]  # дата рождения
-
     fio: Mapped[str] = mapped_column(String)  # ФИО
-    job_title: Mapped[Optional[str]] = mapped_column(String(100))  # должность
+    job_title: Mapped[Optional[str]] = mapped_column(String(255))  # должность
     rank_title: Mapped[Optional[str]] = mapped_column(SmallInteger)  # разряд
     tabel_number: Mapped[Optional[str]] = mapped_column(String(30))  # табельный номер
-    tabel_filename: Mapped[Optional[str]] = mapped_column(String(30))  # имя файла табеля 1С
+    tabel_filename: Mapped[Optional[str]] = mapped_column(String(255))  # имя файла табеля 1С
     tariff_rate: Mapped[Optional[str]] = mapped_column(Integer)  # тарифная ставка
-    division: Mapped[Optional[str]] = mapped_column(String(30))  # подразделение
-    status: Mapped[str] = mapped_column(String(30), nullable=True)  # статус ?
-    schedule: Mapped[Optional[str]] = mapped_column(SmallInteger)  # график работы
+    division: Mapped[Optional[str]] = mapped_column(String(255))  # подразделение
+    status: Mapped[str] = mapped_column(String(255), nullable=True)  # статус ?
+    schedule: Mapped[Optional[str]] = mapped_column(String(255))  # график работы
     shift_hours: Mapped[Optional[str]] = mapped_column(SmallInteger)  # часов в смене
     skud_access: Mapped[Optional[str]] = mapped_column(SmallInteger)  # точка доступа скуд
     day_start: Mapped[Optional[str]] = mapped_column(SmallInteger)  # время начала рабочей смены
-    boss: Mapped[Optional[str]] = mapped_column(String(100))  # руководитель
+    boss: Mapped[Optional[str]] = mapped_column(String(255))  # руководитель
     KTR_category: Mapped[Optional[str]] = mapped_column(String(50))  # категория КТР
     KTR: Mapped[Optional[float]] = mapped_column(Float)  # значение КТР
     has_NAX: Mapped[Optional[bool]] = mapped_column(Boolean)  # есть НАКС
     KNAX: Mapped[Optional[float]] = mapped_column(Float)  # значение коэффициента НАКС
-    timesheets: Mapped[List["Timesheet"]] = relationship(back_populates="employee")
     # данные для 1С
-    fio_responsible = Mapped[Optional[str]]  # фио отвественного
-    INN_employee = Mapped[Optional[BigInteger]]  # ИНН сотрудника
-    INN_responsible = Mapped[Optional[BigInteger]]  # ИНН ответственного
-    INN_company = Mapped[Optional[BigInteger]]  # ИНН юр.лица
-
-
-
-
+    fio_responsible: Mapped[Optional[str]]  # фио отвественного
+    INN_employee:  Mapped[Optional[str]] = mapped_column(String(50))  # ИНН сотрудника
+    INN_responsible: Mapped[Optional[str]] = mapped_column(String(50))  # ИНН ответственного
+    INN_company: Mapped[Optional[str]] = mapped_column(String(50))  # ИНН юр.лица
+    timesheets: Mapped[List["Timesheet"]] = relationship("Timesheet", back_populates="employee")
     # timesheets = relationship("Timesheet", back_populates="employee")
 
 
 class Timesheet(Base):
     """ Модель табеля сотрудника """
     __tablename__ = 'timesheet_test'
-    __table_args__ = {
-        'info': {'use_autogenerate': True}
-    }
+    # __table_args__ = {
+    #     'info': {'use_autogenerate': True}
+    # }
     id: Mapped[intpk]
     date: Mapped[date_type]  # дата работы сотрудника
     # фио сотрудник
-    employee_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("alchemy_test1.id", ondelete='CASCADE'))
-    employee: Mapped["Employee"] = relationship(back_populates='timesheets')
+    employee_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("employee_test.id", ondelete='CASCADE'))
+    employee: Mapped["Employee"] = relationship("Employee", back_populates='timesheets')
     # employee = relationship(Employee, back_populates='timesheets')
     day_status: Mapped[Optional[str]] = mapped_column(String(10))  # статус работы в день (больничный, отпуск etc)
     # Поля СКУД
@@ -81,6 +76,6 @@ class Timesheet(Base):
 
 
 if __name__ == '__main__':
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
     pass
-    # Base.metadata.drop_all(bind=engine)
-    # Base.metadata.create_all(bind=engine)

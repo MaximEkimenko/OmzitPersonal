@@ -70,7 +70,7 @@ def xml_zup_read(xml_path: str, xlsx_file: str, json_file: str) -> list or False
             result_list.append(copy(result_dict))
         logger.info("Переформатирование xml в xlsx и json прошло успешно.")
     except Exception as e:
-        logger.error(f'Ошибка переформатирования xml в xlsx и jsonю')
+        logger.error(f'Ошибка переформатирования xml в xlsx и json')
         logger.exception(e)
         return False
     #  сохранение в excel
@@ -123,11 +123,13 @@ def xml_tabel_read(xml_file: str, json_file: str) -> list:
 
 
 if __name__ == '__main__':
-    path_tst = r'M:\Xranenie\Reportbolid'
-    xlsx_tst = r'reformat\zup_fios_json_1C.xlsx'
-    json_tst = r'reformat\zup_fios_json_1C.json'
+    path_tst = r'M:\Xranenie\Reportbolid\new_tst'
+    xlsx_tst = r'M:\Xranenie\Reportbolid\reformat\zup_fios_json_1C.xlsx'
+    json_tst = r'M:\Xranenie\Reportbolid\reformat\zup_fios_json_1C.json'
     json_tabel_tst = r'reformat\tabel_fios_json_1C.json'
     xml_zup_read(xml_path=path_tst, xlsx_file=xlsx_tst, json_file=json_tst)
-    xml_tabel = 'ТабельЕРП(Новый).xml'
-    xml_tabel_read(xml_file=xml_tabel, xml_path=path_tst, json_file=json_tabel_tst)
+
+
+    # xml_tabel = 'ТабельЕРП(Новый).xml'
+    # xml_tabel_read(xml_file=xml_tabel, xml_path=path_tst, json_file=json_tabel_tst)
 

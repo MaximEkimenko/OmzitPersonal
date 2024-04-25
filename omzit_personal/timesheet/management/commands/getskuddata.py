@@ -11,7 +11,7 @@ from django.utils.timezone import make_aware
 
 from timesheet.models import Employee, Timesheet
 
-logger = logging.getLogger("logger")
+# logger = logging.getLogger("logger")
 
 POINTS = {
     'Турникет': (40, 41),
@@ -46,7 +46,7 @@ def get_skud_data(date_start=YESTERDAY, date_end=YESTERDAY, point=POINTS["Тур
     # интервал выгрузки
     date = date_start
     while date <= date_end:
-        logger.info(f"Получение табеля за {date}...")
+        # logger.info(f"Получение табеля за {date}...")
         timesheets = get_timesheets(employees=employees, date=date, point=point)
         created = updated = 0
         for employee, data in timesheets.items():
@@ -61,8 +61,9 @@ def get_skud_data(date_start=YESTERDAY, date_end=YESTERDAY, point=POINTS["Тур
                 else:
                     updated += 1
             except Exception as ex:
-                logger.error(f"Исключение {ex} при создании/обновлении записи в БД табелей с данными: {data}")
-        logger.info(f"{date} Обновлено: {updated}, создано: {created}")
+                pass
+                # logger.error(f"Исключение {ex} при создании/обновлении записи в БД табелей с данными: {data}")
+        # logger.info(f"{date} Обновлено: {updated}, создано: {created}")
         date += ONE_DAY
 
 
@@ -242,7 +243,7 @@ def query_row_handler(row, result, errors):
             'skud_error': False,
             'skud_error_query': None,
         })
-        logger.info(f"Обновлено: {row}")
+        # logger.info(f"Обновлено: {row}")
 
     if msg == 'Ошибка':
         # получаем табель сотрудника за прошлый день,
@@ -262,7 +263,7 @@ def query_row_handler(row, result, errors):
                 'skud_error': True,
                 'skud_error_query': get_detail_error_query(date=date, employee_id=employee_id)
             })
-            logger.warning(f"{error_msg} {row}")
+            # logger.warning(f"{error_msg} {row}")
 
     if shift == 'Дневная':
         result[employee].update({
@@ -379,3 +380,9 @@ def execute_query(query, action, result, errors):
 
 def count_hours(start, end):
     return int((end - start).total_seconds() / 3600)
+
+
+if __name__ == '__main__':
+    # date_start = datetime.date(day=1, month=5, year=2023)
+    # date_end = datetime.date(day=30, month=11, year=2023)
+    get_skud_data()

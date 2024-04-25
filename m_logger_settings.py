@@ -33,7 +33,7 @@ LOGGING_CONFIG = {
             # pip install colorlog
             "()": "colorlog.ColoredFormatter",
             "format": "%(light_white)s%(asctime)s: %(log_color)s%(levelname)s%(reset)s%(light_white)s|"
-                      "%(module)s|%(funcName)s|%(lineno)-15s %(light_white)s%(message)-15s"
+                      "%(module)s|%(funcName)s|%(lineno)-15s %(light_white)s%(message)-15s| "
                       "%(filename)s",
             "log_colors": {
                 "DEBUG": "cyan",
@@ -88,7 +88,7 @@ LOGGING_CONFIG = {
             'encoding': 'utf-8',
             "formatter": "file",
             "filename": log_file_debug,
-            'maxBytes': 51200000000,
+            'maxBytes': 102400000,
             'backupCount': 1,
         },
         "file_info": {
@@ -97,7 +97,7 @@ LOGGING_CONFIG = {
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "file",
             "filename": log_file_info,
-            "maxBytes": 51200000000,
+            "maxBytes": 102400000,
             "backupCount": 1,
         },
         "json": {
@@ -106,7 +106,7 @@ LOGGING_CONFIG = {
             "formatter": "json",
             "class": "logging.handlers.RotatingFileHandler",
             "filename": log_file_json,
-            "maxBytes": 102400000000,
+            "maxBytes": 102400000,
             "backupCount": 1,
         },
         # "queue_handler": {

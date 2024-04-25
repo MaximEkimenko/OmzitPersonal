@@ -5,7 +5,7 @@ from copy import copy
 
 class DataPrepare:
     """
-    класс подготовки данных из json 1C в БД
+    класс подготовки данных 1C в json в БД
     """
     def __init__(self, translate_dict: dict, json_file: str, new_json_file):
         """

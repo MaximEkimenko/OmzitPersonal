@@ -163,3 +163,5 @@ logs
 logs/
 json
 json/
+/logs/
+/json/

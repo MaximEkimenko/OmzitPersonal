@@ -1,9 +1,9 @@
 import os
-from utils.data_prepare import DataPrepare
+from service.data_prepare import DataPrepare
 import shutil
 from m_logger_settings import logger
-from utils.xml_to_json import xml_zup_read
-from settings import BASEDIR
+from service.xml_to_json import xml_zup_read
+from constants import BASEDIR
 
 
 def json_creation() -> list:
@@ -54,7 +54,7 @@ def json_creation() -> list:
                                'ДатаУвольнения': 'fired_date',
                                'ДатаРождения': 'birthday_date',
                                'ФизическоеЛицоИНН': 'INN_employee',
-                               'ОрганизацияИНН': 'INN_company',
+                               'ИННОрганизации': 'INN_company',
                                'Организация': 'company_name',
                                'ВидЗанятости': 'job_type',
                                'ДатаДокумента': 'document_date',

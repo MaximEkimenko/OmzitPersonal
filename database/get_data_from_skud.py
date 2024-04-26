@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Dict, Tuple
 import pyodbc
 from dotenv import load_dotenv
-from settings import dotenv_path
+from constants import dotenv_path
 
 try:
     from database.models_alchemy import Employee, Timesheet
@@ -32,10 +32,6 @@ POINTS = {
 
 ONE_DAY = datetime.timedelta(days=1)
 YESTERDAY = datetime.datetime.date(datetime.datetime.now() - ONE_DAY)
-
-
-
-
 
 
 def get_skud_data(date_start=YESTERDAY, date_end=YESTERDAY, point=POINTS["Турникет"]):

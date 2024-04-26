@@ -8,9 +8,9 @@ except ModuleNotFoundError:
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 try:
-    from database.database import engine, session_factory
+    from database.database import engine
 except ModuleNotFoundError:
-    from database import engine, session_factory
+    from database import engine
 
 
 intpk = Annotated[int, mapped_column(BigInteger, primary_key=True, autoincrement=True, index=True)]

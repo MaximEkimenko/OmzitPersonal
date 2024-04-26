@@ -1,7 +1,8 @@
-from sqlalchemy import create_engine, text
+
+from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
-from settings import BASEDIR
-from settings import dotenv_path
+from constants import dotenv_path
 from dotenv import load_dotenv
 import os
 
@@ -16,18 +17,25 @@ PORT = os.getenv("ALCHEMY_DB_PORT")
 
 
 database_url = f'postgresql+psycopg://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'
+database_async_url = f'postgresql+asyncpg://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'
 
+# sync
 engine = create_engine(
     url=database_url,
     echo=False,
     max_overflow=10
 )
-
-session_factory = sessionmaker(engine)
+session_factory = sessionmaker(engine, expire_on_commit=False, autoflush=False)
+# async
+async_engine = create_async_engine(
+    url=database_url,
+    echo=False,
+    max_overflow=10
+)
+async_session_factory = async_sessionmaker(async_engine, expire_on_commit=False)
 
 
 class Base(DeclarativeBase):
-
     repr_cols_num = 3
     repr_cols = tuple()
 
@@ -37,3 +45,11 @@ class Base(DeclarativeBase):
             if col in self.repr_cols or index < self.repr_cols_num:
                 cols.append(f"{col}={getattr(self, col)}\n")
         return f"<{self.__class__.__name__} {','.join(cols)}>"
+
+
+def get_db():
+    db = session_factory()
+    try:
+        yield db
+    finally:
+        db.close()

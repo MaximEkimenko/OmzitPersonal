@@ -4,13 +4,13 @@ from database.models_alchemy import Employee, Timesheet
 from sqlalchemy import select, insert, update, text
 from sqlalchemy.orm import joinedload, selectinload
 import json
+from schemas import SEmployee
 from m_logger_settings import logger
 
 
 def bulk_add(data: list) -> None:
     """
-    Функция добавляет в БД данные из словаря dict по ФИО значение в словаре ФИО должны быть
-    уникальны. Функция для запуска по расписанию.
+    Функция добавляет в БД данные из словаря dict по ФИО.
     :param data:
     :return:
     """
@@ -31,7 +31,7 @@ def bulk_add(data: list) -> None:
 
 def bulk_update(data: list) -> None:
     """
-    Функция обновляет данные в БД сз словаря data. Функция для запуска по расписанию.
+    Функция обновляет данные в БД сз словаря data.
     :param data:
     :return:
     """
@@ -51,20 +51,31 @@ def bulk_update(data: list) -> None:
                 session.commit()
                 logger.debug(f"Обновлено {line}")
             else:
-                logger.debug(f"Статус не изменился {line}")
+                logger.debug(f"{line} - Статус не изменился. Не обновлено")
 
 
-def get_all_data(model) -> list:
+def get_employees(data: SEmployee):
     """
-    NOT USED
-    Функция возвращает список всех данных из модели model
-    :param model:
+    Функция получения работников из БД
+    :param data:
     :return:
     """
     with session_factory() as session:
-        data = session.query(model).all()
+        # employee_dict = data.model_dump()
+        data = session.execute(select(Employee)).scalars().all()
     return data
 
+
+def get_all_data():
+    """
+    NOT USED
+    :param data:
+    :return:
+    """
+    with session_factory() as session:
+        # employee_dict = data.model_dump()
+        data = session.execute(select(Employee)).scalars().all()
+    return data
 
 
 def select_line():
@@ -73,7 +84,6 @@ def select_line():
     :return:
     """
     with session_factory() as session:
-
         query = select(Employee)
         # result = session.execute(query)
         # workers = result.scalars().all()[0].fio

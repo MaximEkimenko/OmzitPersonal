@@ -1,5 +1,9 @@
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
+from typing import List, Dict
+from database.models_alchemy import Timesheet, Employee
 
 
 class SEmployee(BaseModel):
@@ -7,9 +11,9 @@ class SEmployee(BaseModel):
     Сотрудник
     """
     id: int | None = None
-    employment_date: str | None = None
-    fired_date: str | None = None
-    birthday_date: str | None = None
+    employment_date: datetime | None = None
+    fired_date: datetime | None = None
+    birthday_date: datetime | None = None
     fio: str
     job_title: str | None = None
     rank_title: str | None = None
@@ -32,7 +36,10 @@ class SEmployee(BaseModel):
     INN_employee: str | None = None
     INN_responsible: str | None = None
     INN_company: str | None = None
-    timesheets: dict | None = None
+    # timesheets: dict | None = None
+
+    class Config:
+        from_attributes = True
 
 
 class STimesheet(BaseModel):
@@ -40,13 +47,13 @@ class STimesheet(BaseModel):
     Табель
     """
     id: int | None = None
-    date: str | None = None
+    date: datetime | None = None
     # фио сотрудник
     employee_id: int
     day_status: str | None = None
     # Поля СКУД
-    skud_day_start_1: str | None = None
-    skud_day_end_1: str | None = None
+    skud_day_start_1: datetime | None = None
+    skud_day_end_1: datetime | None = None
     skud_day_duration: int | None = None
     skud_night_duration: int | None = None
     is_day_alter: bool | None = None
@@ -55,3 +62,38 @@ class STimesheet(BaseModel):
     is_night_alter: bool | None = None
     skud_error: bool | None = None
     skud_error_query: str | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class STimesheetDisplay(STimesheet):
+    id: int | None = None
+    date: datetime | None = None
+    # фио сотрудник
+    employee: List[SEmployee] = None
+    # employee_id: int
+    day_status: str | None = None
+    # Поля СКУД
+    skud_day_start_1: datetime | None = None
+    skud_day_end_1: datetime | None = None
+    skud_day_duration: int | None = None
+    skud_night_duration: int | None = None
+    is_day_alter: bool | None = None
+    altered_day_duration: int | None = None
+    altered_night_duration: int | None = None
+    is_night_alter: bool | None = None
+    skud_error: bool | None = None
+    skud_error_query: str | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class SEmployeeDisplay(SEmployee):
+    fio: str | None = None
+    division: str | None = None
+
+    class Config:
+        from_attributes = True
+

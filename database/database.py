@@ -28,11 +28,11 @@ engine = create_engine(
 session_factory = sessionmaker(engine, expire_on_commit=False, autoflush=False)
 # async
 async_engine = create_async_engine(
-    url=database_url,
+    url=database_async_url,
     echo=False,
     max_overflow=10
 )
-async_session_factory = async_sessionmaker(async_engine, expire_on_commit=False)
+async_session_factory = async_sessionmaker(async_engine, expire_on_commit=False, autoflush=False)
 
 
 class Base(DeclarativeBase):
@@ -47,7 +47,7 @@ class Base(DeclarativeBase):
         return f"<{self.__class__.__name__} {','.join(cols)}>"
 
 
-def get_db():
+async def get_db():
     db = session_factory()
     try:
         yield db

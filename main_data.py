@@ -14,10 +14,10 @@ bulk_add(clean_zup_to_python)
 # Групповое обновление в БД данных ЗУП в таблице Employee
 bulk_update(clean_zup_to_python)
 # Получение данных табеля и занесение в таблицу Timesheets за вчерашний день
-# get_skud_data()
+get_skud_data()
 # ручная выгрузка интервала из СКУД
-date_string = '2024-04-01'  # дата начала
-random_date = datetime.datetime.strptime(date_string, '%Y-%m-%d').date()
-today = datetime.datetime.now().date()
-get_skud_data(date_start=random_date, date_end=today)
+# date_string = '2024-04-01'  # дата начала
+# random_date = datetime.datetime.strptime(date_string, '%Y-%m-%d').date()
+# today = datetime.datetime.now().date()
+# get_skud_data(date_start=random_date, date_end=today)
 # вчерашняя выгрузка

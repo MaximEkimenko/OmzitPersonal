@@ -28,7 +28,7 @@ class Employee(Base):
     id: Mapped[intpk]
     employment_date: Mapped[Optional[date_type]]  # Дата принятия на работу
     fired_date: Mapped[Optional[date_type]]  # дата увольнения
-    birthday_date = Mapped[Optional[date_type]]  # дата рождения
+    birthday_date: Mapped[Optional[date_type]]  # дата рождения
     fio: Mapped[str] = mapped_column(String)  # ФИО
     job_title: Mapped[Optional[str]] = mapped_column(String(255))  # должность
     rank_title: Mapped[Optional[str]] = mapped_column(SmallInteger)  # разряд

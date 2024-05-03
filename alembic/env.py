@@ -5,7 +5,10 @@ from sqlalchemy import pool
 
 from alembic import context
 from database.database import database_url
-from database.database import Base
+
+from database.models import Timesheet, Employee
+from database.models import Base
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -26,22 +29,6 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-MIGRATE_TABLES = ['alchemy_test1', 'alchemy_test2']  # list of tanbes for autogenerate migrations
-
-
-def include_object(_object, name, type_, reflected, compare_to):
-    """
-    including table for autogenerate migrations by alembic
-    """
-
-    if type_ == 'table' and (name in MIGRATE_TABLES or _object.info.get("use_autogenerate", False)):
-        return True
-
-    elif type_ == "column" and _object.info.get("use_autogenerate", False):
-        return True
-
-    return False
-
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -60,8 +47,9 @@ def run_migrations_offline() -> None:
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
-        include_object=include_object,
         dialect_opts={"paramstyle": "named"},
+        compare_server_default=True,
+        compare_type=True
     )
 
     with context.begin_transaction():
@@ -80,11 +68,15 @@ def run_migrations_online() -> None:
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
 
+
     )
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata, include_object=include_object
+            connection=connection,
+            target_metadata=target_metadata,
+            compare_server_default=True,
+            compare_type=True
         )
 
         with context.begin_transaction():

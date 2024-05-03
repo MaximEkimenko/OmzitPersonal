@@ -22,9 +22,6 @@ class Employee(Base):
     Модель сотрудника
     """
     __tablename__ = 'employee_test'
-    # __table_args__ = {
-    #     'info': {'use_autogenerate': True}
-    # }
     id: Mapped[intpk]
     employment_date: Mapped[Optional[date_type]]  # Дата принятия на работу
     fired_date: Mapped[Optional[date_type]]  # дата увольнения
@@ -58,9 +55,6 @@ class Employee(Base):
 class Timesheet(Base):
     """ Модель табеля сотрудника """
     __tablename__ = 'timesheet_test'
-    # __table_args__ = {
-    #     'info': {'use_autogenerate': True}
-    # }
     id: Mapped[intpk]
     date: Mapped[date_type]  # дата работы сотрудника
     # фио сотрудник
@@ -81,7 +75,11 @@ class Timesheet(Base):
     skud_error_query: Mapped[Optional[str]] = mapped_column(String)
 
 
-if __name__ == '__main__':
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
-    pass
+
+
+
+
+# if __name__ == '__main__':
+#     Base.metadata.drop_all(bind=engine)
+#     Base.metadata.create_all(bind=engine)
+#     pass

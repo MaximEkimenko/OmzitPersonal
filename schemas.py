@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from typing import List, Dict
-from database.models_alchemy import Timesheet, Employee
+from database.models import Timesheet, Employee
 
 
 class SEmployee(BaseModel):
@@ -44,35 +44,14 @@ class SEmployee(BaseModel):
 
 class STimesheet(BaseModel):
     """
-    Табель
+    Табель сотрудника
     """
     id: int | None = None
     date: datetime | None = None
     # фио сотрудник
-    employee_id: int
-    day_status: str | None = None
-    # Поля СКУД
-    skud_day_start_1: datetime | None = None
-    skud_day_end_1: datetime | None = None
-    skud_day_duration: int | None = None
-    skud_night_duration: int | None = None
-    is_day_alter: bool | None = None
-    altered_day_duration: int | None = None
-    altered_night_duration: int | None = None
-    is_night_alter: bool | None = None
-    skud_error: bool | None = None
-    skud_error_query: str | None = None
 
-    class Config:
-        from_attributes = True
-
-
-class STimesheetDisplay(STimesheet):
-    id: int | None = None
-    date: datetime | None = None
-    # фио сотрудник
-    employee: List[SEmployee] = None
     # employee_id: int
+    employee: SEmployee
     day_status: str | None = None
     # Поля СКУД
     skud_day_start_1: datetime | None = None
@@ -89,6 +68,29 @@ class STimesheetDisplay(STimesheet):
     class Config:
         from_attributes = True
 
+
+# class STimesheetDisplay(STimesheet):
+#     id: int | None = None
+#     date: datetime | None = None
+#     # фио сотрудник
+#     employee: SEmployee
+#     # employee_id: int
+#     day_status: str | None = None
+#     # Поля СКУД
+#     skud_day_start_1: datetime | None = None
+#     skud_day_end_1: datetime | None = None
+#     skud_day_duration: int | None = None
+#     skud_night_duration: int | None = None
+#     is_day_alter: bool | None = None
+#     altered_day_duration: int | None = None
+#     altered_night_duration: int | None = None
+#     is_night_alter: bool | None = None
+#     skud_error: bool | None = None
+#     skud_error_query: str | None = None
+#
+#     class Config:
+#         from_attributes = True
+#
 
 class SEmployeeDisplay(SEmployee):
     fio: str | None = None

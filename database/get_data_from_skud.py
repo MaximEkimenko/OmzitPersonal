@@ -8,10 +8,10 @@ from dotenv import load_dotenv
 from constants import dotenv_path
 
 try:
-    from database.models_alchemy import Employee, Timesheet
+    from database.models import Employee, Timesheet
     from database.database import session_factory
 except ModuleNotFoundError:
-    from models_alchemy import Employee, Timesheet
+    from models import Employee, Timesheet
     from database import session_factory
 
 from m_logger_settings import logger

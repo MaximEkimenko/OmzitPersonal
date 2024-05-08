@@ -21,14 +21,13 @@ from database.database import db_dependency
 # db_dependency = Annotated[Session, Depends(get_db)]
 async_db_dependency = Annotated[AsyncSession, Depends(get_aync_db)]
 
-
 router = APIRouter(
     prefix="/emp",
     tags=['main']
 )
 
 
-#TODO TEST_ASYNC
+# TODO TEST_ASYNC
 @router.get('/async_all_emp')
 async def async_get_employee_with_dependency(db: async_db_dependency) -> List[SEmployee]:
     """
@@ -42,8 +41,6 @@ async def async_get_employee_with_dependency(db: async_db_dependency) -> List[SE
     res = [row[0] for row in employees.all()]
     # return result_schema
     return res
-
-
 
 
 # @router.get('')
@@ -87,9 +84,8 @@ async def get_one_employee_with_dependency(user_id: int, db: db_dependency) -> L
 
 
 @router.get('/timesheet')
-async def get_timesheet(start_time: datetime.datetime,
-                        division: str,
-                        db: db_dependency) -> List[STimesheet]:
+async def get_timesheet(db: db_dependency, division: str = "Основное",
+                        start_time: datetime.datetime = '2024-05-01') -> List[STimesheet]:
     """
     Получение табелей
     :return:
@@ -106,6 +102,28 @@ async def get_timesheet(start_time: datetime.datetime,
     result_schema = [STimesheet.model_validate(timesheet) for timesheet in result]
     return result_schema
 
+
+
+# @router.get('/async_timesheet')
+# async def async_get_timesheet(db: async_db_dependency, division: str = "Основное",
+#                               start_time: datetime.datetime = '2024-05-01') -> List[STimesheet]:
+#     """
+#     Получение табелей
+#     :return:
+#     """
+#     query = ((select(Timesheet).where(Timesheet.date > start_time,
+#                                       Employee.division == division,
+#                                       Timesheet.skud_day_duration != None
+#                                       ))
+#              .select_from(Employee)
+#              .join(Timesheet, Employee.id == Timesheet.employee_id))
+#     # query = select(Timesheet).where(Timesheet.id < 10).select_from(Employee).join(Timesheet, Employee.id == Timesheet.employee_id)
+#     timesheets = await db.execute(query)
+#     result = timesheets.scalars().all()
+#     print(result)
+#     result_schema = [STimesheet.model_validate(timesheet) for timesheet in result]
+#     print(result_schema)
+#     return result_schema
 
 
 @router.post('/add_emp')

@@ -9,7 +9,6 @@ app = FastAPI(title='personal_timesheets')
 app.include_router(router)
 
 
-
 @app.get('/')
 async def get_home():
     return {"data": "started"}
@@ -20,6 +19,9 @@ origins = [
     'http://127.0.0.1:8888',
     'http://127.0.0.1:3000',
     'http://localhost:3000',
+    'http://localhost:8080',
+    'http://0.0.0.0:8080',
+    'http://0.0.0.0:8888',
 ]
 
 app.add_middleware(

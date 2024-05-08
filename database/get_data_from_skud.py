@@ -7,12 +7,12 @@ import pyodbc
 from dotenv import load_dotenv
 from constants import dotenv_path
 
-try:
-    from database.models import Employee, Timesheet
-    from database.database import session_factory
-except ModuleNotFoundError:
-    from models import Employee, Timesheet
-    from database import session_factory
+# try:
+from database.models import Employee, Timesheet
+from database.database import session_factory
+# except Exception:
+#     from models import Employee, Timesheet
+#     from database import session_factory
 
 from m_logger_settings import logger
 from sqlalchemy import select, insert, update

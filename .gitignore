@@ -166,3 +166,6 @@ json/
 /logs/
 /json/
 *.sql
+.dockerignore
+front
+tst_in_personal.py

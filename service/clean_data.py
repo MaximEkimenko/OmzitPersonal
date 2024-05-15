@@ -12,7 +12,7 @@ def clean_data(json_data: list) -> list:
     :param json_data:
     :return:
     """
-    onec_dir_json = r'M:\Xranenie\Reportbolid\reformat'  # директория хранения json
+    onec_dir_json = r'/personal_app/xml_data/reformat'  # директория хранения json
     today = datetime.datetime.now()
     clean_zup_fio_list = []  # результирующий список
     uniq_fios = set()  # множество уникальных фио
@@ -79,9 +79,6 @@ def clean_data(json_data: list) -> list:
                 one_fio_dict[last_date_str]['status'] = f'Уволен {last_date_str}'
                 add_to_clean_data = True
                 logger.info(f"Уволен {last_date_str}:  {one_fio_dict[last_date_str]['fio']}")
-
-
-
             else:
                 one_fio_dict[last_date_str]['status'] = 'явка'
             # фильтровка уволенных и мусорных данных
@@ -89,7 +86,6 @@ def clean_data(json_data: list) -> list:
                     'я.' not in one_fio_dict[last_date_str]['company_name']):
                 clean_zup_fio_list.append(one_fio_dict[last_date_str])
             uniq_fios.add(line['fio'])  # добавление пройденных ФИО в множество для следующей итерации
-
     # сохранение и копирование чистого json
     clean_zup_fio_list_json_file = BASEDIR / 'json' / 'clean_zup_fios_to_python.json'
     try:
@@ -105,7 +101,7 @@ def clean_data(json_data: list) -> list:
 
 
 if __name__ == '__main__':
-    json_file = r'M:\Xranenie\Reportbolid\reformat\zup_fios_json_python.json'
+    json_file = r'D:\xml_data\reformat\zup_fios_json_python.json'
     with open(json_file, 'r', encoding='utf-8') as json_f:
         new_zup_fios_list = json.load(json_f)
     clean_data(new_zup_fios_list)

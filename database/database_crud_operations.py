@@ -1,10 +1,13 @@
-import datetime
-from database.database import session_factory
-from database.models import Employee, Timesheet
-from sqlalchemy import select, insert, update, text
-from sqlalchemy.orm import joinedload, selectinload
-import json
-from schemas import SEmployee
+try:
+    from database.database import session_factory, async_session_factory
+except Exception:
+    from database import session_factory, async_session_factory
+try:
+    from database.models import Employee, Timesheet
+except Exception:
+    from models import Employee, Timesheet
+
+from sqlalchemy import select, insert, update
 from m_logger_settings import logger
 
 
@@ -54,18 +57,6 @@ def bulk_update(data: list) -> None:
                 logger.debug(f"{line} - Статус не изменился. Не обновлено")
 
 
-def get_employees(data: SEmployee):
-    """
-    Функция получения работников из БД
-    :param data:
-    :return:
-    """
-    with session_factory() as session:
-        # employee_dict = data.model_dump()
-        data = session.execute(select(Employee)).scalars().all()
-    return data
-
-
 def get_all_data():
     """
     NOT USED
@@ -78,6 +69,17 @@ def get_all_data():
     return data
 
 
+def get_all_divisions():
+    """
+    Функция возвращает все подразделения компании
+    :return:
+    """
+    with session_factory() as session:
+        result = session.execute(select(Employee.division).distinct())
+        divisions = result.scalars().all()
+    return tuple(divisions)
+
+
 def select_line():
     """
     NOT USABLE
@@ -85,20 +87,10 @@ def select_line():
     """
     with session_factory() as session:
         query = select(Employee)
-        # result = session.execute(query)
-        # workers = result.scalars().all()[0].fio
-        # print(f"{workers=}")
-        # query2 = select(Timesheet).options(joinedload(Timesheet.employee))
         query2 = select(Timesheet)
         result = session.execute(query)
-        # employees1 = result.scalars().all().employee.fio
         for line in result.scalars().all():
             print(line)
-            # for el in line:
-            #     print(el)
-            # print(line)
-        # employees2 = result.scalars().all().employee.fio
-        # print(f"{employees1=}")
 
 
 def update_line():
@@ -114,12 +106,6 @@ def update_line():
 
 
 if __name__ == '__main__':
+    print(get_all_divisions())
     pass
-    # json_file_tst = r'D:\АСУП\Python\Projects\OmzitPersonal\json\fio_full_json.json'
-    # get_all_data(Employee)
-    # employees = {employee.fio: {"fio": employee.id} for employee in get_all_data(Employee)}
-    # a = get_all_data(Employee)
-    # for _line in a:
-    #     print(line.timesheets)
-    # update_line()
-    # select_line()
+

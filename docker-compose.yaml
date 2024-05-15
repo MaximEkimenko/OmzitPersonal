@@ -1,33 +1,36 @@
 version: "3.8"
 
-
 services:
-#  db: # подключение к БД происходит через 'host.docker.internal' на внешнюю, существующую БД
-
   redis:
     image: redis:7
-    container_name: redis_app
+    restart: unless-stopped
     command: --port 5370
     expose:
       - 5370
+
   app:
     build:
       context: .
-    container_name: personal_app
     restart: unless-stopped
     ports:
       - 5001:5001
+    volumes:
+      - d:\xml_data:/personal_app/xml_data
+    depends_on:
+      - celery
 
   celery:
-    container_name: celery_app
+    restart: unless-stopped
     build:
       context: .
-    command: ["/personal_app/docker/celery.sh"]
+    command: celery -A tasks:celery_app worker -B -l info
+    volumes:
+      - d:\xml_data:/personal_app/xml_data
     depends_on:
       - redis
 
   flower:
-    container_name: flower_app
+    restart: unless-stopped
     build:
       context: .
     command: celery -A tasks:celery_app flower
@@ -37,7 +40,6 @@ services:
     ports:
       - 5555:5555
 
-
 # docker-compose build
-# docker-compose up
+# docker-compose up -d
 

@@ -14,28 +14,48 @@ def schedule_db_refresh(start_date: str = None, end_date: str = None):
     :param start_date:
     :return:
     """
-    zup_to_cleaning = json_creation()
+    try:
+        zup_to_cleaning = json_creation()
+        logger.info('zup_to_cleaning complete!')
+    except Exception as e:
+        logger.error('Ошибка zup_to_cleaning')
+        logger.exception(e)
     # очистка данных
-    clean_zup_to_python = clean_data(zup_to_cleaning)
+    try:
+        clean_zup_to_python = clean_data(zup_to_cleaning)
+        logger.info('clean_zup_to_python complete!')
+    except Exception as e:
+        logger.error('Ошибка clean_zup_to_python')
+        logger.exception(e)
     # Групповое добавление в БД данных ЗУП в таблицу Employee
-    bulk_add(clean_zup_to_python)
+    try:
+        bulk_add(clean_zup_to_python)
+        logger.info('bulk_add complete!')
+    except Exception as e:
+        logger.error('Ошибка bulk_add')
+        logger.exception(e)
     # Групповое обновление в БД данных ЗУП в таблице Employee
-    bulk_update(clean_zup_to_python)
+    try:
+        bulk_update(clean_zup_to_python)
+        logger.info('bulk_update complete!')
+    except Exception as e:
+        logger.error('Ошибка bulk_update')
+        logger.exception(e)
     if not all((start_date, end_date)):
         # Получение данных табеля и занесение в таблицу Timesheets за вчерашний день
         try:
             get_skud_data()
-            # logger.info('Загрузка в БД personal за вчерашний день выполнена.')
+            logger.info('Загрузка в БД personal за вчерашний день выполнена.')
         except Exception as e:
-            # logger.error('Ошибка при загрузке в БД personal за вчерашний день.')
+            logger.error('Ошибка при загрузке в БД personal за вчерашний день.')
             logger.exception(e)
     else:
         # Получение данных табеля и занесение в таблицу Timesheets за период
         try:
             get_skud_data(date_start=start_date, date_end=end_date)
-            # logger.info(f"Загрузка в БД personal за период {start_date} - {end_date} выполнена.")
+            logger.info(f"Загрузка в БД personal за период {start_date} - {end_date} выполнена.")
         except Exception as e:
-            # logger.error(f'Ошибка при загрузке в БД personal за период за период {start_date} - {end_date}.')
+            logger.error(f'Ошибка при загрузке в БД personal за период за период {start_date} - {end_date}.')
             logger.exception(e)
 
 

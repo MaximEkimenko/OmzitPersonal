@@ -6,7 +6,7 @@ from typing import Dict, Tuple
 import pyodbc
 from dotenv import load_dotenv
 from constants import dotenv_path
-
+from constants import TIMEZONE
 # try:
 from database.models import Employee, Timesheet
 from database.database import session_factory
@@ -30,8 +30,11 @@ POINTS = {
     'Турникет': (40, 41),
 }
 
+#
 ONE_DAY = datetime.timedelta(days=1)
-YESTERDAY = datetime.datetime.date(datetime.datetime.now() - ONE_DAY)
+# вчера с учётом TIMEZONE
+
+YESTERDAY = datetime.datetime.date(datetime.datetime.now() - ONE_DAY + datetime.timedelta(hours=TIMEZONE))
 
 
 def get_skud_data(date_start=YESTERDAY, date_end=YESTERDAY, point=POINTS["Турникет"]):
@@ -413,8 +416,9 @@ def execute_query(query, result=None, errors=None, action=None):
     """
     start = time.time()
     try:
+        # libmsodbcsql-17.10.so.6.1
         cnxn = pyodbc.connect(
-            f'DRIVER=SQL Server;'
+            f'DRIVER=/opt/microsoft/msodbcsql17/lib64/libmsodbcsql-17.10.so.6.1;' 
             f'SERVER={BD_SERVER};'
             f'DATABASE={BD_DATABASE};'
             f'UID={BD_USERNAME};'

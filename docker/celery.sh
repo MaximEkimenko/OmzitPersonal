@@ -2,4 +2,4 @@
 
 celery -A tasks:celery_app worker -l info --pool=solo
 
-celery -A tasks:celery_app worker -l info
+celery -A tasks:celery_app beat -l info

@@ -15,9 +15,11 @@ def xml_accumulate(xml_path: str) -> list:
     file_list = []
     for root_dir, path_dirs, path_files in os.walk(xml_path):
         for file in path_files:
-            if '.xml' in file and '~' not in file:
+            # if '.xml' in file and '~' not in file:
+            if '.xml' in file:
                 if xml_path == root_dir:
                     file_list.append(file)
+    logger.debug(f'список xml файлов {file_list} в директории {xml_path}.')
     all_roots = []
     for file in file_list:
         file_path = os.path.join(xml_path, file)
@@ -26,6 +28,8 @@ def xml_accumulate(xml_path: str) -> list:
         for xml_element in root_xmls:
             xml_element.set('file', file)  # добавление имени файла в элемент
             all_roots.append(xml_element)
+    if not all_roots:
+        logger.error(f'ОТСУТСВУЮ ФАЙЛЫ XML в ДИРЕКТОРИИ {xml_path}')
     return all_roots
 
 
@@ -40,6 +44,7 @@ def xml_zup_read(xml_path: str, xlsx_file: str, json_file: str) -> list or False
     # получение списка всех xml
     try:
         all_roots = xml_accumulate(xml_path)
+        # logger.debug(f'содержимое xml файлов {all_roots=}')
         logger.info(f"Все xml в {xml_path} удачно прочитаны.")
     except Exception as e:
         logger.error(f"Ошибка чтения xml файлов в директории {xml_path}.")

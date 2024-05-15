@@ -1,10 +1,10 @@
 import datetime
 from typing import Optional, Annotated
 from sqlalchemy import MetaData, DateTime, Integer, String, SmallInteger, BigInteger, Boolean, Float, ForeignKey
-# try:
-from database.database import Base
-# except Exception:
-#     from . database import Base
+try:
+    from database.database import Base
+except ModuleNotFoundError:
+    from database import Base
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 try:

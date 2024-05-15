@@ -14,26 +14,29 @@ def json_creation() -> list:
     # TODO в случае создания UI директории перенести в настройки приложения и передавать функции на входе
     # TODO удалить deprecated функционал
     # директория хранения ЗУП xml 1C
-    onec_dir_xml_zup = r'M:\Xranenie\Reportbolid'
+    onec_dir_xml_zup = r'/personal_app/xml_data'
     # директория хранения переформатированного из xml 1С
-    onec_dir_json = r'M:\Xranenie\Reportbolid\reformat'
+    onec_dir_json = r'/personal_app/xml_data/reformat'
     # файл excel из xml ЗУП 1C
     xlsx_from_xml_zup = os.path.join(onec_dir_json, 'zup_fios_json_1C.xlsx')
+    logger.debug(f'файл excel из xml ЗУП 1C {xlsx_from_xml_zup=}')
     # файл json из xml ЗУП 1C
     json_from_xml_zup = os.path.join(onec_dir_json, 'zup_fios_json_1C.json')
+    logger.debug(f'файл json из xml ЗУП 1C {json_from_xml_zup=}')
     # файл json из xml ТАБЕЛЯ 1C
-    json_from_xml_tabel = os.path.join(onec_dir_json, 'tabel_fios_json_1C.json')
+    # json_from_xml_tabel = os.path.join(onec_dir_json, 'tabel_fios_json_1C.json')
     # исходный xml файл табеля 1С
-    xml_tabel = r'M:\Xranenie\Reportbolid\Табель\ТабельЕРП(Новый).xml'
+    # xml_tabel = r'M:\Xranenie\Reportbolid\Табель\ТабельЕРП(Новый).xml'
     # переформатированный исходник 1С из xml функцией xml_tabel_read
     tabel_fios_json_1C = os.path.join(onec_dir_json, 'tabel_fios_json_1C.json')
     # переформатированный исходник 1С из xml функцией xml_to_xlsx
     zup_fios_json_1C = os.path.join(onec_dir_json, 'zup_fios_json_1C.json')
+    logger.debug(f'переформатированный исходник 1С из xml {zup_fios_json_1C=}')
     # директория хранения json python
     # dotenv_path = os.path.join(BASEDIR, '.env')
     # python_dir = r'/json'
     python_dir = os.path.join(BASEDIR, 'json')
-
+    logger.debug(f'директория хранения json python {python_dir=}')
     # создаваемые json табеля для записи в БД python
     tabel_fios_json_python = os.path.join(python_dir, 'tabel_fios_json_python.json')
     zup_fios_json_python = os.path.join(python_dir, 'zup_fios_json_python.json')
@@ -62,15 +65,20 @@ def json_creation() -> list:
                                'ИсходныйФайл': 'zup_filename'
                                }
     # перевод файла ЗУПА
-    zup_fios = DataPrepare(json_file=zup_fios_json_1C, translate_dict=zup_fios_translate_dict,
-                           new_json_file=zup_fios_json_python)
-    zup_fios_list = zup_fios.translate_fields()
+    try:
+        zup_fios = DataPrepare(json_file=zup_fios_json_1C, translate_dict=zup_fios_translate_dict,
+                               new_json_file=zup_fios_json_python)
+        zup_fios_list = zup_fios.translate_fields()
+    except Exception as e:
+        logger.error(f'Ошибка очистки данных и формирования zup_fios_list')
+
     # копирование python jsons в общий доступ
     try:
         # shutil.copy(tabel_fios_json_python, onec_dir_json)
         shutil.copy(zup_fios_json_python, onec_dir_json)
         # shutil.copy(fio_full_json, onec_dir_json)
         # shutil.copy(data_errors_file, onec_dir_json)
+        logger.info(f'Копирование файла {tabel_fios_json_python} в директорию {onec_dir_json}, прошло успешно')
     except Exception as e:
         logger.error(f'Ошибка копирования файлов {tabel_fios_json_python}, '
                      f'{zup_fios_json_python}, '

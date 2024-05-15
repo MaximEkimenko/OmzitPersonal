@@ -1,12 +1,9 @@
 from datetime import datetime
-
-from pydantic import BaseModel, ConfigDict
-from typing import Optional
-from typing import List, Dict
-from database.models import Timesheet, Employee
+import enum
+from pydantic import BaseModel
 
 
-class SEmployee(BaseModel):
+class SEmployee(BaseModel): # TODO добавить все данные для карточки ФИО
     """
     Сотрудник
     """
@@ -49,7 +46,6 @@ class STimesheet(BaseModel):
     id: int | None = None
     date: datetime | None = None
     # фио сотрудник
-
     # employee_id: int
     employee: SEmployee
     day_status: str | None = None
@@ -69,29 +65,6 @@ class STimesheet(BaseModel):
         from_attributes = True
 
 
-# class STimesheetDisplay(STimesheet):
-#     id: int | None = None
-#     date: datetime | None = None
-#     # фио сотрудник
-#     employee: SEmployee
-#     # employee_id: int
-#     day_status: str | None = None
-#     # Поля СКУД
-#     skud_day_start_1: datetime | None = None
-#     skud_day_end_1: datetime | None = None
-#     skud_day_duration: int | None = None
-#     skud_night_duration: int | None = None
-#     is_day_alter: bool | None = None
-#     altered_day_duration: int | None = None
-#     altered_night_duration: int | None = None
-#     is_night_alter: bool | None = None
-#     skud_error: bool | None = None
-#     skud_error_query: str | None = None
-#
-#     class Config:
-#         from_attributes = True
-#
-
 class SEmployeeDisplay(SEmployee):
     fio: str | None = None
     division: str | None = None
@@ -99,3 +72,29 @@ class SEmployeeDisplay(SEmployee):
     class Config:
         from_attributes = True
 
+
+class Divisions(enum.Enum):
+    """Список отделов"""
+    op = 'Основное подразделение'
+    umk = 'Участок малогабаритных конструкций'
+    ceh2 = 'ЦЕХ № 2'
+    ceh1 = 'Цех №1'
+    osn = 'Основное'
+    otk = 'Отдел технического контроля (ОТК)'
+    opr = 'Отдел плазменного раскроя'
+    pto = 'Производственно-технический отдел (ПТО)'
+    sb = 'Сборочный участок'
+    p_ceh = 'Производственный цех'
+    pdo = 'Производственно-диспетчерский отдел'
+    sklad = 'Отдел складской и транспортной логистики'
+    puch = 'Производственный участок'
+    ogt = 'Отдел главного технолога'
+    pko = 'Производственно-конструкторский отдел'
+    oit = 'Отдел информационных технологий'
+    dmto = 'Департамент материально-технического обеспечения (ДМТО)'
+
+
+#
+# divs = get_all_divisions()
+# for i, value in enumerate(divs):
+#     setattr(Divisions, str(i), value)

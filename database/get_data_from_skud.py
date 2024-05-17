@@ -33,8 +33,7 @@ POINTS = {
 #
 ONE_DAY = datetime.timedelta(days=1)
 # вчера с учётом TIMEZONE
-
-YESTERDAY = datetime.datetime.date(datetime.datetime.now() - ONE_DAY + datetime.timedelta(hours=TIMEZONE))
+YESTERDAY = datetime.datetime.date(datetime.datetime.now() + datetime.timedelta(hours=TIMEZONE) - ONE_DAY)
 
 
 def get_skud_data(date_start=YESTERDAY, date_end=YESTERDAY, point=POINTS["Турникет"]):
@@ -76,7 +75,8 @@ def get_skud_data(date_start=YESTERDAY, date_end=YESTERDAY, point=POINTS["Тур
             except Exception as e:
                 logger.exception(e)
                 logger.error(f"Ошибка создании/обновлении записи в БД табелей с данными: {data}")
-        logger.info(f"Успешно занесено в базу данных. {date} Обновлено: {updated}, создано: {created}")
+        logger.info(f"Успешно занесено в базу данных за дату. Дата: {date} Обновлено: {updated}, создано: {created}"
+                    f"Заполнено: {timesheets}")
         date += ONE_DAY
 
 

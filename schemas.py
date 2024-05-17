@@ -1,5 +1,7 @@
 from datetime import datetime
 import enum
+
+from database.database_crud_operations import get_all_divisions
 from pydantic import BaseModel
 
 
@@ -93,8 +95,15 @@ class Divisions(enum.Enum):
     oit = 'Отдел информационных технологий'
     dmto = 'Департамент материально-технического обеспечения (ДМТО)'
 
+if __name__ == '__main__':
+    divs = get_all_divisions()
+    Divisions = enum.Enum('val', divs)
+    Divisions = {v: k for k, v in Divisions.__members__.items()}
+    print(Divisions)
+    # for key, val in Divisions.__members__.items():
+    #     print(val)
+    # divs = get_all_divisions()
+    # Divisions = enum.Enum('val', divs)
+    # print(Divisions.__members__.keys())
+    # # print(divs)
 
-#
-# divs = get_all_divisions()
-# for i, value in enumerate(divs):
-#     setattr(Divisions, str(i), value)

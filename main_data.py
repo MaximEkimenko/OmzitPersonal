@@ -7,7 +7,7 @@ from database.get_data_from_skud import get_skud_data
 from m_logger_settings import logger
 
 
-def schedule_db_refresh(start_date: str = None, end_date: str = None):
+def schedule_db_refresh(start_date=None, end_date=None):
     """
     Функция выполняет сбор из БД СКУД и запись в БД personal данных с даты start_date до end_date
     :param end_date:
@@ -81,6 +81,7 @@ def schedule_db_refresh(start_date: str = None, end_date: str = None):
 
 
 if __name__ == '__main__':
-    schedule_db_refresh()
+    end_date_tst = datetime.date.today()
+    schedule_db_refresh(start_date=datetime.date(year=2024, day=18, month=5), end_date=end_date_tst)
 
 

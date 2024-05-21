@@ -14,9 +14,11 @@ def json_creation() -> list:
     # TODO в случае создания UI директории перенести в настройки приложения и передавать функции на входе
     # TODO удалить deprecated функционал
     # директория хранения ЗУП xml 1C
-    onec_dir_xml_zup = r'/personal_app/xml_data'
+    onec_dir_xml_zup = r'/personal_app/xml_data'  # для docker
+    # onec_dir_xml_zup = r'D:\xml_data'  # для тестов
     # директория хранения переформатированного из xml 1С
-    onec_dir_json = r'/personal_app/xml_data/reformat'
+    onec_dir_json = r'/personal_app/xml_data/reformat'  # для docker
+    # onec_dir_json = r'D:\xml_data\reformat'  # для тестов
     # файл excel из xml ЗУП 1C
     xlsx_from_xml_zup = os.path.join(onec_dir_json, 'zup_fios_json_1C.xlsx')
     logger.debug(f'файл excel из xml ЗУП 1C {xlsx_from_xml_zup=}')

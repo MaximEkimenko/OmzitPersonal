@@ -14,8 +14,10 @@ celery_app = Celery('tasks', broker='redis://redis:5370')
 
 
 @celery_app.task()
-def yesterday_from_db(start_date: str = None, end_date: str = None):
-    schedule_db_refresh()
+def yesterday_from_db():
+    start_date = datetime.date.today() - datetime.timedelta(days=1)
+    end_date = datetime.date.today()
+    schedule_db_refresh(start_date, end_date)
 
 
 @celery_app.task()
@@ -28,13 +30,6 @@ def send_notification_mail():
 
 @celery_app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-
-    # # TODO перенести в services
-    # def convert_time_to_utc(time_str: str) -> datetime:
-    #     utc_delta = int(time.localtime().tm_hour - time.gmtime().tm_hour)
-    #     chosen_date = datetime.datetime.strptime(f"{time_str}+0{utc_delta}00", "%H:%M%z")
-    #     return chosen_date - datetime.timedelta(hours=utc_delta)
-
 
     # время запуска выгрузки БД
     # db_upload_time = convert_time_to_utc('02:00')
@@ -64,3 +59,6 @@ def setup_periodic_tasks(sender, **kwargs):
 
     }
 
+
+if __name__ == '__main__':
+    yesterday_from_db()

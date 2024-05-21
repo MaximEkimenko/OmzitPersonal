@@ -7,12 +7,12 @@ import pyodbc
 from dotenv import load_dotenv
 from constants import dotenv_path
 from constants import TIMEZONE
-# try:
-from database.models import Employee, Timesheet
-from database.database import session_factory
-# except Exception:
-#     from models import Employee, Timesheet
-#     from database import session_factory
+try:
+    from database.models import Employee, Timesheet
+    from database.database import session_factory
+except Exception:
+    from models import Employee, Timesheet
+    from database import session_factory
 
 from m_logger_settings import logger
 from sqlalchemy import select, insert, update
@@ -30,7 +30,6 @@ POINTS = {
     'Турникет': (40, 41),
 }
 
-#
 ONE_DAY = datetime.timedelta(days=1)
 # вчера с учётом TIMEZONE
 YESTERDAY = datetime.datetime.date(datetime.datetime.now() + datetime.timedelta(hours=TIMEZONE) - ONE_DAY)
@@ -44,6 +43,19 @@ def get_skud_data(date_start=YESTERDAY, date_end=YESTERDAY, point=POINTS["Тур
     :param point: точка доступа СКУД
     :return:
     """
+    # TODO добавить в значения по умолчанию.
+    # POINTS = {
+    #     'Турникет': (40, 41),
+    # }
+    # ONE_DAY = datetime.timedelta(days=1)
+    # # вчера с учётом TIMEZONE
+    # YESTERDAY = datetime.datetime.date(datetime.datetime.now() + datetime.timedelta(hours=TIMEZONE) - ONE_DAY)
+    #
+    # date_start = YESTERDAY
+    # date_end = YESTERDAY
+    # point = POINTS
+
+
     with session_factory() as session:
         employees = {employee.fio: {"fio": employee}
                      for employee in session.execute(select(Employee)).scalars().all()}
@@ -416,9 +428,10 @@ def execute_query(query, result=None, errors=None, action=None):
     """
     start = time.time()
     try:
-        # libmsodbcsql-17.10.so.6.1
         cnxn = pyodbc.connect(
-            f'DRIVER=/opt/microsoft/msodbcsql17/lib64/libmsodbcsql-17.10.so.6.1;' 
+            f'DRIVER=/opt/microsoft/msodbcsql17/lib64/libmsodbcsql-17.10.so.6.1;' # для docker
+            # f'DRIVER=ODBC Driver 17 for SQL Server;'
+            # f'DRIVER=SQL Server;' # для тестов
             f'SERVER={BD_SERVER};'
             f'DATABASE={BD_DATABASE};'
             f'UID={BD_USERNAME};'

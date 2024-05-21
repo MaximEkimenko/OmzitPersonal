@@ -43,6 +43,7 @@ async def get_all_employees(db: async_db_dependency, amount: int = None) -> List
     :amount: количество сотрудников. При незаполненном amount возвращает всех сотрудников.
     :return: None
     """
+    # TODO перенести логику БД в отдельный файл
     if not amount:
         query = select(Employee)
     else:
@@ -58,6 +59,7 @@ async def get_employee(user_id: int, db: async_db_dependency) -> List[SEmployee]
     Получение сотрудника по user_id
     :return:
     """
+    # TODO перенести логику БД в отдельный файл
     query = select(Employee).where(Employee.id == user_id)
     employees = await db.execute(query)
     result = employees.scalars().all()
@@ -94,8 +96,16 @@ async def get_timesheet(db: db_dependency, division: Divisions = None,
     return result_schema
 
 
-
-
+@router.get('/divisions')
+def get_all_divisions(db: db_dependency):
+    """
+    Все подразделения компании из ЗУП
+    :return:
+    """
+    query = select(Employee.division).distinct()
+    result = db.execute(query)
+    divisions = result.scalars().all()
+    return divisions
 
 # @router.get('/timesheet')
 # async def get_timesheet(db: db_dependency, division: str = "Основное",

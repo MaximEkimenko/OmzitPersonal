@@ -33,7 +33,7 @@ LOGGING_CONFIG = {
             # pip install colorlog
             "()": "colorlog.ColoredFormatter",
             "format": "%(light_white)s%(asctime)s: %(log_color)s%(levelname)s%(reset)s%(light_white)s|"
-                      "%(module)s|%(funcName)s|%(lineno)-15s %(light_white)s%(message)-15s| "
+                      "%(module)s|%(funcName)s|%(lineno)-5s %(light_white)s%(message)-5s| "
                       "%(filename)s",
             "log_colors": {
                 "DEBUG": "cyan",

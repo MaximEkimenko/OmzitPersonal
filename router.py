@@ -3,9 +3,10 @@ from pydantic import BaseModel
 from database.database_crud_operations import get_all_divisions
 from fastapi import APIRouter, Query, Body
 from fastapi import FastAPI
-from schemas import SEmployee, STimesheet
+from schemas import SEmployee, STimesheet, SDivisions
+from m_logger_settings import logger
 
-from schemas import Divisions
+# from schemas import Divisions
 # from tst_in_personal import Divisions
 from fastapi import Depends
 from typing import Annotated
@@ -68,7 +69,7 @@ async def get_employee(user_id: int, db: async_db_dependency) -> List[SEmployee]
 
 
 @router.get('/timesheet')
-async def get_timesheet(db: db_dependency, division: Divisions = None,
+async def get_timesheet(db: db_dependency, division: str = None,
                         start_time: datetime.datetime = yesterday,
                         end_time: datetime.datetime = today) -> List[STimesheet]:
     """
@@ -76,17 +77,19 @@ async def get_timesheet(db: db_dependency, division: Divisions = None,
     :return:
     """
     if not division:
-        query = ((select(Timesheet).where(Timesheet.date > start_time,
+        query = ((select(Timesheet).where(Timesheet.date >= start_time,
                                           Timesheet.date <= end_time,
                                           Timesheet.skud_day_duration != None
+                                          # Employee.status == 'явка'
                                           ))
                  .select_from(Employee)
                  .join(Timesheet, Employee.id == Timesheet.employee_id))
     else:
-        query = ((select(Timesheet).where(Timesheet.date > start_time,
+        query = ((select(Timesheet).where(Timesheet.date >= start_time,
                                           Timesheet.date <= end_time,
-                                          Employee.division == division.value,
+                                          Employee.division == division,
                                           Timesheet.skud_day_duration != None
+                                          # Employee.status == 'явка'
                                           ))
                  .select_from(Employee)
                  .join(Timesheet, Employee.id == Timesheet.employee_id))
@@ -97,34 +100,13 @@ async def get_timesheet(db: db_dependency, division: Divisions = None,
 
 
 @router.get('/divisions')
-def get_all_divisions(db: db_dependency):
+def get_all_divisions(db: db_dependency) -> List[SDivisions]:
     """
-    Все подразделения компании из ЗУП
-    :return:
+    Все уникальные подразделения компании из ЗУП
     """
-    query = select(Employee.division).distinct()
+    query = select(Employee.id, Employee.division).distinct(Employee.division)
     result = db.execute(query)
-    divisions = result.scalars().all()
-    return divisions
-
-# @router.get('/timesheet')
-# async def get_timesheet(db: db_dependency, division: str = "Основное",
-#                         start_time: datetime.datetime = '2024-05-01') -> List[STimesheet]:
-#     """
-#     Получение табелей
-#     :return:
-#     """
-#     query = ((select(Timesheet).where(Timesheet.date > start_time,
-#                                       Employee.division == division,
-#                                       Timesheet.skud_day_duration != None
-#                                       ))
-#              .select_from(Employee)
-#              .join(Timesheet, Employee.id == Timesheet.employee_id))
-#     # query = select(Timesheet).where(Timesheet.id < 10).select_from(Employee).join(Timesheet, Employee.id == Timesheet.employee_id)
-#     timesheets = db.execute(query)
-#     result = timesheets.scalars().all()
-#     result_schema = [STimesheet.model_validate(timesheet) for timesheet in result]
-#     return result_schema
+    return result
 
 
 # @router.get('/async_timesheet')

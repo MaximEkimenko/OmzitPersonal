@@ -13,6 +13,7 @@ def clean_data(json_data: list) -> list:
     :return:
     """
     onec_dir_json = r'/personal_app/xml_data/reformat'  # директория хранения json
+    # onec_dir_json = r'D:\xml_data\reformat'  # тесты
     today = datetime.datetime.now()
     clean_zup_fio_list = []  # результирующий список
     uniq_fios = set()  # множество уникальных фио

@@ -16,7 +16,7 @@ celery_app = Celery('tasks', broker='redis://redis:5370')
 @celery_app.task()
 def yesterday_from_db():
     start_date = datetime.date.today() - datetime.timedelta(days=1)
-    end_date = datetime.date.today()
+    end_date = datetime.date.today() + datetime.timedelta(days=1)
     schedule_db_refresh(start_date, end_date)
 
 
@@ -44,17 +44,17 @@ def setup_periodic_tasks(sender, **kwargs):
         # выгрузка из БД
         'data_upload': {
             'task': 'tasks.yesterday_from_db',
-            'schedule': crontab(hour=24 + 2 - TIMEZONE, minute=0),
+            'schedule': crontab(hour=7, minute=0),
         },
         # отправка письма
         'email_send': {
             'task': 'tasks.send_notification_mail',
-            'schedule': crontab(hour=24 + 2 - TIMEZONE, minute=2),
+            'schedule': crontab(hour=7, minute=2),
         },
 
         'data_upload2': {
             'task': 'tasks.yesterday_from_db',
-            'schedule': crontab(hour=17 - TIMEZONE, minute=0),
+            'schedule': crontab(hour=21 - TIMEZONE, minute=0),
         },
 
     }

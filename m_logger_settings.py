@@ -22,7 +22,6 @@ if not os.path.exists(log_file_debug):
     f_debug = open(log_file_debug, 'a').close()
     f_info = open(log_file_info, 'a').close()
     f_json = open(log_file_json, 'a').close()
-q = Queue()
 date_format = "%Y-%m-%d %H:%M:%S"
 
 LOGGING_CONFIG = {
@@ -33,7 +32,7 @@ LOGGING_CONFIG = {
             # pip install colorlog
             "()": "colorlog.ColoredFormatter",
             "format": "%(light_white)s%(asctime)s: %(log_color)s%(levelname)s%(reset)s%(light_white)s|"
-                      "%(module)s|%(funcName)s|%(lineno)-5s %(light_white)s%(message)-5s| "
+                      "%(module)s|%(funcName)s|%(lineno)-5s %(light_white)s%(message)-5s|"
                       "%(filename)s",
             "log_colors": {
                 "DEBUG": "cyan",

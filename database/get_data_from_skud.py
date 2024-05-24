@@ -429,9 +429,9 @@ def execute_query(query, result=None, errors=None, action=None):
     start = time.time()
     try:
         cnxn = pyodbc.connect(
-            f'DRIVER=/opt/microsoft/msodbcsql17/lib64/libmsodbcsql-17.10.so.6.1;' # для docker
+            f'DRIVER=/opt/microsoft/msodbcsql17/lib64/libmsodbcsql-17.10.so.6.1;'  # для docker
             # f'DRIVER=ODBC Driver 17 for SQL Server;'
-            # f'DRIVER=SQL Server;' # для тестов
+            # f'DRIVER=SQL Server;'  # для тестов
             f'SERVER={BD_SERVER};'
             f'DATABASE={BD_DATABASE};'
             f'UID={BD_USERNAME};'
@@ -458,13 +458,6 @@ def count_hours(start, end):
     return int((end - start).total_seconds() / 3600)
 
 
-if __name__ == '__main__':
-    # ручная выгрузка интервала
-    # date_string = '2024-04-10'
-    # random_date = datetime.datetime.strptime(date_string, '%Y-%m-%d').date()
-    # today = datetime.datetime.now().date()
-    # get_skud_data(date_start=random_date, date_end=today)
-    # вчерашняя выгрузка
-    get_skud_data()
+
 
 

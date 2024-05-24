@@ -1,7 +1,4 @@
 from fastapi import FastAPI
-from schemas import SEmployee, STimesheet
-from fastapi import Depends
-from typing import Annotated
 from router import router
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -22,6 +19,13 @@ origins = [
     'http://localhost:8080',
     'http://0.0.0.0:8080',
     'http://0.0.0.0:8888',
+    'http://0.0.0.0:7001',
+    'http://0.0.0.0:5001',
+    'http://0.0.0.0:3000',
+    'http://192.168.8.163:3000',
+    'http://192.168.8.163:7001/'
+    'http://192.168.8.163:7000/'
+
 ]
 
 app.add_middleware(

@@ -60,10 +60,10 @@ def schedule_db_refresh(start_date=None, end_date=None):
 
 
 
-
-
-
-    # Чтение xml создание json
+    #
+    #
+    #
+    # # Чтение xml создание json
     # zup_to_cleaning = json_creation()
     # # очистка данных
     # clean_zup_to_python = clean_data(zup_to_cleaning)
@@ -72,7 +72,7 @@ def schedule_db_refresh(start_date=None, end_date=None):
     # # Групповое обновление в БД данных ЗУП в таблице Employee
     # bulk_update(clean_zup_to_python)
     # get_skud_data()
-    # ручная выгрузка интервала из СКУД
+    # # ручная выгрузка интервала из СКУД
     # date_string = '2024-05-01'  # дата начала
     # random_date = datetime.datetime.strptime(date_string, '%Y-%m-%d').date()
     # today = datetime.datetime.now().date()
@@ -82,6 +82,6 @@ def schedule_db_refresh(start_date=None, end_date=None):
 
 if __name__ == '__main__':
     end_date_tst = datetime.date.today()
-    schedule_db_refresh(start_date=datetime.date(year=2024, day=18, month=5), end_date=end_date_tst)
+    schedule_db_refresh(start_date=datetime.date(year=2024, day=1, month=5), end_date=end_date_tst)
 
 

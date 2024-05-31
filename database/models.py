@@ -73,9 +73,16 @@ class Timesheet(Base):
     is_night_alter: Mapped[Optional[bool]] = mapped_column(Boolean)  # факт изменения табеля ночи
     skud_error: Mapped[Optional[bool]] = mapped_column(Boolean)  # факт ошибки скуд
     skud_error_query: Mapped[Optional[str]] = mapped_column(String)
+    late_value: Mapped[Optional[int]] = mapped_column(Integer)
 
 
-
+# class Latecomers(Base):
+#     """Модель опоздунов """
+#     __tablename__ = 'latecomers'
+#     id: Mapped[intpk]
+#     date: Mapped[date_type]  # дата
+#     employee_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("employee_test.id", ondelete='CASCADE'))
+#     employee: Mapped["Employee"] = relationship("Employee", back_populates='timesheets')
 
 
 

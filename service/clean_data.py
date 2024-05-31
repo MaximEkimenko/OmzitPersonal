@@ -53,7 +53,7 @@ def clean_data(json_data: list) -> list:
             # больничный
             elif (today - last_date < datetime.timedelta(days=1) and
                   today >= last_date and
-                  'Отсутствие(болезнь, прогул, неявка)' == one_fio_dict[last_date_str]['document']):
+                  'Отсутствие (болезнь, прогул, неявка)' == one_fio_dict[last_date_str]['document']):
                 one_fio_dict[last_date_str]['status'] = 'Б'
                 logger.info(f"Активный больничный {one_fio_dict[last_date_str]['fio']}")
             # командировка

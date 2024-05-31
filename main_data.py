@@ -5,6 +5,7 @@ from database.database_crud_operations import bulk_add
 from database.database_crud_operations import bulk_update
 from database.get_data_from_skud import get_skud_data
 from m_logger_settings import logger
+from database.get_data_from_skud_2 import skud_tabel_insert
 
 
 def schedule_db_refresh(start_date=None, end_date=None):
@@ -44,7 +45,8 @@ def schedule_db_refresh(start_date=None, end_date=None):
     if not all((start_date, end_date)):
         # Получение данных табеля и занесение в таблицу Timesheets за вчерашний день
         try:
-            get_skud_data()
+            skud_tabel_insert()
+            # get_skud_data()
             logger.info('Загрузка в БД personal за вчерашний день выполнена.')
         except Exception as e:
             logger.error('Ошибка при загрузке в БД personal за вчерашний день.')

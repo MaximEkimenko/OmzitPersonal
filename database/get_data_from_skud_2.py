@@ -1,4 +1,4 @@
-from contextlib import contextmanager
+import math
 
 from sqlalchemy import select, insert, update, event
 import datetime
@@ -47,7 +47,6 @@ def query_create(query_type: str,
     time_day_start_800 = f'{today} 08:01:00'
     time_day_start_830 = f'{today} 08:31:00'
     # значения по умолчанию
-
     condition_enter = ''
     condition_exit = ''
     condition_latecomers_800 = ''
@@ -64,12 +63,12 @@ def query_create(query_type: str,
                             AND dbo.pLogData.Remark like '%{is_exit}%'"""
         order_by = 'DESC'
     elif query_type == 'late_800':
-        condition_latecomers_800 = f"""WHERE (pLogData.TimeVal >= {time_day_start_800})
+        condition_latecomers_800 = f"""WHERE (pLogData.TimeVal >= '{time_day_start_800}')
                     AND dbo.pLogData.Remark like '%{access_point}%' 
                     AND dbo.pLogData.Remark like '%{is_enter}%' """
         order_by = 'DESC'
     elif query_type == 'late_830':
-        condition_latecomers_830 = f"""WHERE (pLogData.TimeVal >= {time_day_start_830})
+        condition_latecomers_830 = f"""WHERE (pLogData.TimeVal >= '{time_day_start_830}')
                         AND dbo.pLogData.Remark like '%{access_point}%' 
                         AND dbo.pLogData.Remark like '%{is_enter}%'"""
         order_by = 'DESC'
@@ -103,54 +102,7 @@ def query_create(query_type: str,
     WHERE rn = 1
     ORDER BY datetime;
     """
-
-    # query = f"""SELECT DISTINCT t.ID, t.HozOrgan, t.datetime, t.detail, t.FIO, t.company, t.post
-    # FROM (SELECT pList.ID, pLogData.HozOrgan,
-    #              pLogData.TimeVal AS datetime,
-    #              pLogData.Remark AS detail,
-    #              pList.Name + ' ' + pList.FirstName + ' ' + pList.MidName AS FIO,
-    #              PCompany.Name AS company, PPost.Name AS post,
-    #              ROW_NUMBER() OVER (PARTITION BY pLogData.HozOrgan ORDER BY pLogData.TimeVal {order_by}) AS rn
-    #         FROM dbo.pLogData
-    #         JOIN dbo.pList ON pLogData.HozOrgan = pList.ID
-    #         JOIN dbo.PCompany ON pList.Company = PCompany.id
-    #         JOIN dbo.PPost ON pList.Post = PPost.ID
-    #         {condition_enter}{condition_exit}{condition_latecomers_800}{condition_latecomers_830}
-    #         ) t
-    #         WHERE t.rn = 1
-    #         """
     return query
-
-
-# WITH MaxTimeValPerDateCTE AS (
-#     SELECT
-#         pList.ID,
-#         pLogData.HozOrgan,
-#         pLogData.TimeVal AS datetime,
-#         pLogData.Remark AS detail,
-#         pList.Name + ' ' + pList.FirstName + ' ' + pList.MidName AS FIO,
-#         PCompany.Name AS company,
-#         PPost.Name AS post,
-#         ROW_NUMBER() OVER (PARTITION BY pList.ID, CAST(pLogData.TimeVal AS DATE) ORDER BY pLogData.TimeVal DESC) AS rn
-#     FROM dbo.pLogData
-#     JOIN dbo.pList ON pLogData.HozOrgan = pList.ID
-#     JOIN dbo.PCompany ON pList.Company = PCompany.ID
-#     JOIN dbo.PPost ON pList.Post = PPost.ID
-#     WHERE (pLogData.TimeVal >= '2024-20-05' AND pLogData.TimeVal <= '2024-23-05')
-#         AND pLogData.Remark LIKE '%Турникет%'
-#         AND pLogData.Remark LIKE '%Вход%'
-# )
-# SELECT DISTINCT
-#     ID,
-#     HozOrgan,
-#     datetime,
-#     detail,
-#     FIO,
-#     company,
-#     post
-# FROM MaxTimeValPerDateCTE
-# WHERE rn = 1
-# ORDER BY datetime;
 
 
 def query_execute(query: str, driver: str = 'DRIVER=SQL Server;'):
@@ -189,95 +141,93 @@ def query_execute(query: str, driver: str = 'DRIVER=SQL Server;'):
     return result
 
 
-def get_tabel_skud(start_date: str = None, end_date: str = None):
+def get_tabel_skud(start_date: str = None, end_date: str = None) -> list:
     """
-    Получение данных СКУД в интервале start_date end_date
+    Обработка данных, получение табеля СКУД в интервале start_date end_date
     :param start_date:
     :param end_date:
-    :return:
+    :return: список результатов
     """
+    results_line = dict()  # словарь строки результата
     # получение данных
     enters = query_execute(query_create('enter', start_date, end_date))
-    # print(enters)
     outs = query_execute(query_create('exit', start_date, end_date))
     nighties = []  # список возможных ночников
-    results_line = dict()  # словарь строки результата
     results = []  # список результатов
     # определение длительности работы
     for enter in enters:
+        fio = enter[4]  # ФИО
+        fio_enter = enter[2]  # вход для fio
+        date = datetime.datetime(year=fio_enter.year, month=fio_enter.month, day=fio_enter.day,
+                                 hour=0, minute=1)
+        # время начала работы # TODO ВЫНЕСТИ В ПАРЕМЕТРЫ
+        work_time_start = datetime.datetime(year=fio_enter.year, month=fio_enter.month,
+                                            day=fio_enter.day, hour=8, minute=0)
         for out in outs:
             if enter[4] == out[4] and enter[2].day == out[2].day:
-                fio = enter[4]
-                fio_enter = enter[2]  # вход для fio
                 fio_out = out[2]  # выход для fio
-                date = datetime.datetime(year=fio_enter.year, month=fio_enter.month, day=fio_enter.day,
-                                         hour=0, minute=1)
-                # обработка входа раньше если вход раньше 8:00, то вход = 8:00
-                if fio_enter < datetime.datetime(year=fio_enter.year, month=fio_enter.month,
-                                                 day=fio_enter.day, hour=8, minute=0):
-                    fio_enter = datetime.datetime(year=fio_enter.year, month=fio_enter.month,
-                                                  day=fio_enter.day, hour=8, minute=0)
-                # обработка обеда если выход раньше 12:00, то обед не учитывается
-                if (fio_out > datetime.datetime(year=fio_out.year, month=fio_out.month,
-                                                day=fio_out.day, hour=12, minute=0)
-                        and fio_out - fio_enter > datetime.timedelta(hours=1)):
-                    launch_time = datetime.timedelta(hours=1)
-                else:
-                    launch_time = datetime.timedelta(hours=0)
-                # обработка ночников # TODO добавить автоматический пересчёт вчерашней даты
-                if fio_enter > fio_out:
+                # обработка ночников и ошибок входа
+                if fio_out < fio_enter or fio_out < work_time_start:
                     nighties.append(fio)
                     skud_day_duration = 0
                     skud_error = True
                 else:
-                    skud_day_duration = round(((fio_out - fio_enter - launch_time).seconds / 3600) / 0.5, 0) * 0.5
+                    # обработка обеда если выход раньше 12:00, то обед не учитывается
+                    if fio_out - fio_enter > datetime.timedelta(hours=1):
+                        launch_time = datetime.timedelta(hours=1)
+                    else:
+                        launch_time = datetime.timedelta(hours=0)
+                    if fio_enter > work_time_start:  # опоздания
+                        late_value = math.floor((fio_enter - work_time_start).seconds/3600)
+                    else:
+                        late_value = 0
+                    skud_day_duration = math.floor((fio_out - fio_enter - launch_time).seconds/3600)
                     skud_error = False
-                # охранение результатов
+
+                # сохранение результатов
                 results_line.update({
                     'fio': fio,
                     'date': date,
                     'skud_day_start_1': fio_enter,
                     'skud_day_end_1': fio_out,
                     'skud_day_duration': skud_day_duration,
-                    'skud_error': skud_error
+                    'skud_error': skud_error,
+                    'late_value': late_value
+
                 })
                 results.append(results_line.copy())
-                # print(fio, skud_day_duration)
-    # print(*results)
-    # print(exits[1][2]-enters[1][2])
     return results
 
 
 def skud_tabel_insert(start_date: str = None, end_date: str = None):
-    # Получение данных
+    """
+    Функция добавляет/обновляет данные из СКУД в указанном интервале
+    :param start_date:
+    :param end_date:
+    :return:
+    """
+    # Получение данных табеля
     data = get_tabel_skud(start_date=start_date, end_date=end_date)
     with session_factory() as session:
         # Получение всех fio и их id из таблицы Employee
         fios = {employee.fio: employee.id for employee in session.execute(select(Employee)).scalars().all()}
-
-        # Подготовка данных для обновления и вставки
+        # Подготовка данных табеля для обновления и вставки
         update_data = []
         insert_data = []
-
+        # вставка данных табеля
         for line in data:
-
             fio = line.pop('fio')
             fio_id = fios.get(fio)
             date = line.get('date')
-
             if fio_id:
                 # Проверка существования записи с той же датой
                 existing_record = session.query(Timesheet).filter(
-                    Timesheet.employee_id == fio_id,
-                    Timesheet.date == date
+                    Timesheet.employee_id == fio_id, Timesheet.date == date
                 ).first()
-
                 if existing_record:
                     # Подготовка данных для обновления
                     update_data.append({
-                        'employee_id': fio_id,
-                        'date': date,
-                        **line
+                        'employee_id': fio_id, 'date': date, **line
                     })
                 else:
                     # Подготовка данных для вставки
@@ -287,48 +237,127 @@ def skud_tabel_insert(start_date: str = None, end_date: str = None):
             else:
                 # print(f"Person with FIO {fio} not found in the database")
                 pass
-
         # Выполнение пакетного обновления
         if update_data:
             for record in update_data:
-                session.execute(
-                    update(Timesheet).
-                    where(
-                        Timesheet.employee_id == record['employee_id'],
-                        Timesheet.date == record['date']
-                    ).
-                    values(**{k: v for k, v in record.items() if k not in ['employee_id', 'date']})
-                )
-                session.commit()
-                # logger.debug(f'Обновлена запись {record} ')
+                if record.get('skud_day_end_1', None):  # обновляем только если был выход
+                    # print(record)
+                    session.execute(
+                        update(Timesheet).
+                        where(Timesheet.employee_id == record['employee_id'],
+                              Timesheet.date == record['date']
+                              ).
+                        values(**{k: v for k, v in record.items() if k not in ['employee_id', 'date']})
+                    )
+                else:
+                    logger.info(f"Данные выхода {record['skud_day_end_1']} для "
+                                f"{record['fio']} не обновились")
+            session.commit()
+            # logger.debug(f'Обновлена запись {record} ')
             logger.info(f"Обновлено {len(update_data)} записей")
 
         # Выполнение пакетной вставки
         if insert_data:
             session.bulk_save_objects(insert_data)
             session.commit()
+            logger.debug(f"Заполнены данные: {insert_data}")
             logger.info(f"Добавлено {len(insert_data)} записей")
 
-        # if update_data:
-        #     session.bulk_update_mappings(Timesheet, update_data)
-        # session.commit()
-        # session.bulk_save_objects(data_to_update)
 
-    # query = ((select(Timesheet).where(Timesheet.date >= start_time,
-    #                                   Timesheet.date <= end_time,
-    #                                   Timesheet.skud_day_duration != None
-    #                                   # Employee.status == 'явка'
-    #                                   ))
-    #          .select_from(Employee)
-    #          .join(Timesheet, Employee.id == Timesheet.employee_id))
+def insert_enters(enters: list = None):
+    """
+    Функция выполняет первоначальную вставку fio в БД
+    :param enters:
+    :return:
+    """
+    start_date = (datetime.date.today()).strftime("%Y-%d-%m")
+    end_date = (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%d-%m")
+    insert_data = []
+    if not enters:
+        enters = query_execute(query_create('enter', start_date=start_date, end_date=end_date))
+    with session_factory() as session:
+        # Получение всех fio и их id из таблицы Employee
+        fios = {employee.fio: employee.id for employee in session.execute(select(Employee)).scalars().all()}
+        for line in enters:
+            fio = line[4]
+            fio_id = fios.get(fio)
+            enter_datetime = line[2]
+            work_time_start = datetime.datetime(year=enter_datetime.year, month=enter_datetime.month,
+                                                day=enter_datetime.day, hour=8, minute=0)
 
+            if enter_datetime > work_time_start:
+                late_value = (enter_datetime - work_time_start).seconds / 60
+            else:
+                late_value = 0
+
+            date = datetime.datetime(year=enter_datetime.year, month=enter_datetime.month, day=enter_datetime.day,
+                                     hour=0, minute=1)
+            existing_record = session.query(Timesheet).filter(
+                Timesheet.employee_id == fio_id, Timesheet.date == date
+            ).first()
+            if existing_record:
+                logger.debug(f'Запись для {existing_record.employee.fio} в дате {date} уже существует')
+            else:
+                if fio_id:
+                    new_record = Timesheet(employee_id=fio_id, date=date, skud_day_start_1=enter_datetime,
+                                           late_value=late_value)
+                    insert_data.append(new_record)
+        session.bulk_save_objects(insert_data)
+        session.commit()
+        logger.debug(f"Заполнены данные: {insert_data}")
+        logger.info(f"Добавлено {len(insert_data)} записей")
+
+    # print(insert_data)
+    # print(fios)
+    # print(enters)
+
+
+def get_latecomers(date: str = None, late_time: str = '08:01'):
+    """
+    Функция получает список опоздавших на дату
+    :return:
+    """
+    today = datetime.date.today()
+    if not date:
+        date = datetime.datetime(year=today.year, month=today.month,
+                                 day=today.day, hour=int(late_time.split(':')[0]),
+                                 minute=int(late_time.split(':')[1]), second=0)
+    else:
+        date = datetime.datetime.strptime('date', '%d.%m.%Y')
+    # обновление БД OmzitPersonal
+    start_date = (datetime.date.today()).strftime("%Y-%d-%m")
+    end_date = (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%d-%m")
+    skud_tabel_insert(start_date=start_date, end_date=end_date)
+    insert_enters()
+    # Получение списка опоздавших из БД OmzitPersonal
+    with session_factory() as session:
+        res = session.query(Timesheet).where(Timesheet.skud_day_start_1 >= date)
+        late_comers = [{'fio': row.employee.fio,
+                        'day_start': row.skud_day_start_1,
+                        'late_value': round((row.skud_day_start_1 - date).seconds / 60, 0),
+                        'division': row.employee.division} for row in res]
+
+    return late_comers
+    # print(len(late_comers))
+    # print(late_comers)
+
+    # print(res)
+    # print(res)
+    # print(late_comers)
+
+    # Фиксация опоздавших?
+    # Получение списка из СКУД
+    # data = query_execute(query_create('late_800'))
     # print(data)
 
 
 if __name__ == '__main__':
+    # get_latecomers()
+    insert_enters()
+    # get_latecomers()
     st_date = '2024-01-05'
-    en_date = '2024-25-05'
-    skud_tabel_insert()
-    # print(query_execute(query_create('enter', start_date=st_date, end_date=en_date)))
-    # get_tabel_skud(start_date=st_date, end_date=en_date)
-    # query_create
+    en_date = '2024-01-06'
+    skud_tabel_insert(start_date=st_date, end_date=en_date)
+    # skud_tabel_insert()
+    # print(get_latecomers(late_time='08:01'))
+    pass

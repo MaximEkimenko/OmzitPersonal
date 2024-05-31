@@ -62,6 +62,7 @@ class STimesheet(BaseModel):
     is_night_alter: bool | None = None
     skud_error: bool | None = None
     skud_error_query: str | None = None
+    late_value: int | None = None
 
     class Config:
         from_attributes = True

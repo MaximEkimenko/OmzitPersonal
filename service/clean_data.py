@@ -1,9 +1,21 @@
 import datetime
 import shutil
 from pprint import pprint
-import json
+import json, os
 from m_logger_settings import logger
 from constants import BASEDIR
+from service.kvl_calculation import kvl_calculation
+from service.division_accunulation import division_accumulation
+from constants import MODE
+from dotenv import load_dotenv
+
+
+if MODE == 'test':
+    from constants import test_dotenv_path as dotenv_path
+if MODE == 'docker':
+    from constants import dotenv_path as dotenv_path
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
 
 
 def clean_data(json_data: list) -> list:
@@ -12,8 +24,9 @@ def clean_data(json_data: list) -> list:
     :param json_data:
     :return:
     """
-    onec_dir_json = r'/personal_app/xml_data/reformat'  # директория хранения json
+    # onec_dir_json = r'/personal_app/xml_data/reformat'  # директория хранения json docker
     # onec_dir_json = r'D:\xml_data\reformat'  # тесты
+    onec_dir_json = os.getenv("ONEC_DIR_JSON")
     today = datetime.datetime.now()
     clean_zup_fio_list = []  # результирующий список
     uniq_fios = set()  # множество уникальных фио
@@ -24,8 +37,20 @@ def clean_data(json_data: list) -> list:
             part_keys = []  # даты документов совместителей
             # словарь по датам
             one_fio_dict = {d['document_date'][:-8]: d for d in json_data if d['fio'] == line['fio']}
-            # определение самого позднего документа по ФИО с фильтровкой совместительства
             for key in one_fio_dict:
+                # if one_fio_dict[key].get('division', None) is None:
+                #     one_fio_dict[key].update({'division': 'Не определено'})
+                # Добавление КВЛ
+                kvl_today, kvl_last_month = kvl_calculation(one_fio_dict[key]['employment_date'])
+                one_fio_dict[key].update({'KVL': kvl_today, 'KVL_last_month': kvl_last_month})
+                # объединение мусорных подразделений (только для новых записей)
+                true_division = division_accumulation(one_fio_dict[key]['fio'],
+                                                      one_fio_dict[key]['division_1C'])
+                if true_division:
+                    one_fio_dict[key].update({'division': true_division})
+                else:
+                    one_fio_dict[key].update({'division': one_fio_dict[key]['division_1C']})
+                # определение самого позднего документа по ФИО с фильтровкой совместительства
                 date = datetime.datetime.strptime(key, '%d.%m.%Y')
                 if one_fio_dict[key]['job_type'] == 'Основное место работы':
                     keys.append(date)
@@ -74,7 +99,7 @@ def clean_data(json_data: list) -> list:
                   'Отсутствие с сохранением оплаты' == one_fio_dict[last_date_str]['document']):
                 one_fio_dict[last_date_str]['status'] = 'УДАЛЁНКА'
                 logger.info(f"Отсутствие с сохранением оплаты {one_fio_dict[last_date_str]['fio']}")
-            elif (today - last_date < datetime.timedelta(days=5) and
+            elif (today - last_date < datetime.timedelta(days=14) and
                   today >= last_date and
                   'Увольнение' == one_fio_dict[last_date_str]['document']):
                 one_fio_dict[last_date_str]['status'] = f'Уволен {last_date_str}'

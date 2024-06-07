@@ -43,8 +43,13 @@ class Employee(Base):
     KTR: Mapped[Optional[float]] = mapped_column(Float)  # значение КТР
     has_NAX: Mapped[Optional[bool]] = mapped_column(Boolean)  # есть НАКС
     KNAX: Mapped[Optional[float]] = mapped_column(Float)  # значение коэффициента НАКС
+    KVL: Mapped[Optional[float]] = mapped_column(Float)  # значение коэффициента выслуги лет
+    KVL_last_month: Mapped[Optional[float]] = mapped_column(Float)  # значение КВЛ за прошлый месяц
+    division_1C: Mapped[Optional[str]] = mapped_column(String(255))  # подразделение в 1С
+    schedule_1C: Mapped[Optional[str]] = mapped_column(String(255))  # график работы
+
     # данные для 1С
-    fio_responsible: Mapped[Optional[str]]  # фио отвественного
+    fio_responsible: Mapped[Optional[str]]  # фио ответственного
     INN_employee:  Mapped[Optional[str]] = mapped_column(String(50))  # ИНН сотрудника
     INN_responsible: Mapped[Optional[str]] = mapped_column(String(50))  # ИНН ответственного
     INN_company: Mapped[Optional[str]] = mapped_column(String(50))  # ИНН юр.лица
@@ -61,19 +66,20 @@ class Timesheet(Base):
     employee_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("employee_test.id", ondelete='CASCADE'))
     employee: Mapped["Employee"] = relationship("Employee", back_populates='timesheets')
     # employee = relationship(Employee, back_populates='timesheets')
-    day_status: Mapped[Optional[str]] = mapped_column(String(10))  # статус работы в день (больничный, отпуск etc)
+    day_status: Mapped[Optional[str]] = mapped_column(String(200))  # статус работы (больничный, отпуск etc)
+    day_status_short: Mapped[Optional[str]] = mapped_column(String(10))  # статус работы коротко
     # Поля СКУД
     skud_day_start_1: Mapped[date_type]   # вход день
     skud_day_end_1: Mapped[date_type]  # выход день
-    skud_day_duration: Mapped[Optional[int]] = mapped_column(SmallInteger)  # длительность дня
-    skud_night_duration: Mapped[Optional[int]] = mapped_column(SmallInteger)  # длительность ночи
+    skud_day_duration: Mapped[Optional[float]] = mapped_column(Float)  # длительность дня
+    skud_night_duration: Mapped[Optional[float]] = mapped_column(Float)  # длительность ночи
     is_day_alter: Mapped[Optional[bool]] = mapped_column(Boolean)  # факт изменения табеля дня
     altered_day_duration: Mapped[Optional[int]] = mapped_column(SmallInteger)  # корректированная длительность дня
     altered_night_duration: Mapped[Optional[int]] = mapped_column(SmallInteger)  # корректированная длительность ночи
     is_night_alter: Mapped[Optional[bool]] = mapped_column(Boolean)  # факт изменения табеля ночи
     skud_error: Mapped[Optional[bool]] = mapped_column(Boolean)  # факт ошибки скуд
     skud_error_query: Mapped[Optional[str]] = mapped_column(String)
-    late_value: Mapped[Optional[int]] = mapped_column(Integer)
+    late_value: Mapped[Optional[float]] = mapped_column(Float)
 
 
 # class Latecomers(Base):

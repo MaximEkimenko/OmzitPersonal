@@ -1,29 +1,18 @@
+# TODO перенести логику БД в отдельный файл
 import datetime
-from pydantic import BaseModel
-from database.database_crud_operations import get_all_divisions
-from fastapi import APIRouter, Query, Body
-from fastapi import FastAPI
-from schemas import SEmployee, STimesheet, SDivisions
+from fastapi import APIRouter
+from schemas import SEmployee, STimesheet, SDivisions, TimeshitTODB, EmployeeToDB
 from m_logger_settings import logger
-
-# from schemas import Divisions
-# from tst_in_personal import Divisions
 from fastapi import Depends
-from typing import Annotated
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import Employee, Timesheet
 from typing import List, Annotated
-from typing import Union
 
-from database.database import async_session_factory, session_factory
 from database.database import get_db, get_aync_db
 from database.database import db_dependency
 
-# аннотированная зависимость с БД
-# db_dependency = Annotated[Session, Depends(get_db)]
 async_db_dependency = Annotated[AsyncSession, Depends(get_aync_db)]
 
 router = APIRouter(
@@ -44,7 +33,7 @@ async def get_all_employees(db: async_db_dependency, amount: int = None) -> List
     :amount: количество сотрудников. При незаполненном amount возвращает всех сотрудников.
     :return: None
     """
-    # TODO перенести логику БД в отдельный файл
+
     if not amount:
         query = select(Employee)
     else:
@@ -55,7 +44,7 @@ async def get_all_employees(db: async_db_dependency, amount: int = None) -> List
 
 
 @router.get('/get_employee/{user_id}')
-async def get_employee(user_id: int, db: async_db_dependency) -> List[SEmployee]:
+async def get_employee(user_id: int, db: async_db_dependency) -> SEmployee:
     """
     Получение сотрудника по user_id
     :return:
@@ -63,8 +52,8 @@ async def get_employee(user_id: int, db: async_db_dependency) -> List[SEmployee]
     # TODO перенести логику БД в отдельный файл
     query = select(Employee).where(Employee.id == user_id)
     employees = await db.execute(query)
-    result = employees.scalars().all()
-    result_schema = [SEmployee.model_validate(employee) for employee in result]
+    employee = employees.scalars().first()
+    result_schema = SEmployee.model_validate(employee)
     return result_schema
 
 
@@ -100,44 +89,93 @@ async def get_timesheet(db: db_dependency, division: str = None,
 
 
 @router.get('/divisions')
-def get_all_divisions(db: db_dependency) -> List[SDivisions]:
+async def get_all_divisions(db: db_dependency) -> List[SDivisions]:
     """
     Все уникальные подразделения компании из ЗУП
     """
-    query = select(Employee.id, Employee.division).distinct(Employee.division)
-    result = db.execute(query)
+    allowed_list = ('цех №1', 'цех №2', 'цех №3', 'цех №4', 'Участок малогабаритных конструкций')
+    query = (select(Employee.id, Employee.division).distinct(Employee.division)
+             .where(Employee.division.in_(allowed_list)))
+    result = db.execute(query).fetchall()
     return result
 
 
-# @router.get('/async_timesheet')
-# async def async_get_timesheet(db: async_db_dependency, division: str = "Основное",
-#                               start_time: datetime.datetime = '2024-05-01') -> List[STimesheet]:
-#     """
-#     Получение табелей
-#     :return:
-#     """
-#     query = ((select(Timesheet).where(Timesheet.date > start_time,
-#                                       Employee.division == division,
-#                                       Timesheet.skud_day_duration != None
-#                                       ))
-#              .select_from(Employee)
-#              .join(Timesheet, Employee.id == Timesheet.employee_id))
-#     # query = select(Timesheet).where(Timesheet.id < 10).select_from(Employee).join(Timesheet, Employee.id == Timesheet.employee_id)
-#     timesheets = await db.execute(query)
-#     result = timesheets.scalars().all()
-#     print(result)
-#     result_schema = [STimesheet.model_validate(timesheet) for timesheet in result]
-#     print(result_schema)
-#     return result_schema
+@router.post('/save')
+async def save_timesheet(db: db_dependency, request: List[TimeshitTODB]):
+    """
+    Заполнение БД табелями
+    :param db:
+    :param request:
+    :return:
+    """
+    status_dict = {'О': 'Отпуск', 'Б': 'Больничный', 'В': 'Выходной', 'К': 'Командировка',
+                   'А': 'Административный отпуск'}
+    for timesheet in request:
+        for date, skud_value in timesheet.skud_day_duration.items():
+            # подготовка данных
+            date = datetime.datetime.strptime(date, '%Y-%m-%d')
+            fio = timesheet.employee.fio
+            fio_id = timesheet.employee.id
+            late_value = timesheet.late_value
+            # print(late_value)
+            if skud_value != '':
+                if skud_value in status_dict:
+                    day_status = status_dict.get(skud_value)
+                    day_status_short = skud_value
+                    skud_day_duration = 0
+                    late_value = 0
+                elif skud_value == '0':
+                    day_status = 'Отсутствие'
+                    skud_day_duration = 0
+                    day_status_short = skud_value
+                    late_value = 0
+                else:
+                    day_status = 'Явка'
+                    day_status_short = 'Я'
+                    skud_day_duration = float(skud_value)
+                # print(fio_id, fio, date, day_status, day_status_short, skud_day_duration)
+                # существующие записи
+                exist_query = select(Timesheet.employee_id, Timesheet.date).where(
+                    Timesheet.employee_id == fio_id,
+                    Timesheet.date == date)
+                existing_record = db.execute(exist_query).fetchone()
+
+                if existing_record:
+                    print('\n', existing_record, fio)
+                    # обновление записи
+                    update_query = update(Timesheet).where(
+                        Timesheet.employee_id == fio_id,
+                        Timesheet.date == date).values({'day_status': day_status,
+                                                        'skud_day_duration': skud_day_duration,
+                                                        'day_status_short': day_status_short,
+                                                        'late_value': late_value})
+                    db.execute(update_query)
+                    db.commit()
+                else:
+                    # добавление новой записи
+                    new_record = Timesheet(employee_id=fio_id, date=date, day_status=day_status,
+                                           skud_day_duration=skud_day_duration, day_status_short=day_status_short,
+                                           late_value=late_value)
+                    db.add(new_record)
+                    db.commit()
+    return new_record
 
 
-# @router.post('/add_emp')
-# async def add_employee(employee: Annotated[SEmployee, Depends()]):
-#     """
-#     Обновление данных
-#     :param employee:
-#     :return:
-#     """
-#     # test_emp.append(employee)
-#     # print(test_emp)
-#     return {'data': employee}
+@router.post('/save_employee')
+async def save_employee(db: db_dependency, request: EmployeeToDB):
+    """
+       Функция сохранения списка сотрудников
+       :param db:
+       :param request:
+       :return:
+       """
+    fio_id = request.id
+    fio_division = request.division
+    fio_schedule = request.schedule
+    print(fio_id, fio_division, fio_schedule)
+    update_query = update(Employee).where(Employee.id == fio_id).values({'division': fio_division,
+                                                                         'schedule': fio_schedule})
+    db.execute(update_query)
+    db.commit()
+    return {'status': 'ok'}
+

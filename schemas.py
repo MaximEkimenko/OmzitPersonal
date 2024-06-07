@@ -5,7 +5,7 @@ from database.database_crud_operations import get_all_divisions
 from pydantic import BaseModel
 
 
-class SEmployee(BaseModel): # TODO добавить все данные для карточки ФИО
+class SEmployee(BaseModel):
     """
     Сотрудник
     """
@@ -30,11 +30,16 @@ class SEmployee(BaseModel): # TODO добавить все данные для �
     KTR: str | None = None
     has_NAX: str | None = None
     KNAX: str | None = None
+    KVL: float | None = None
+    KVL_last_month: float | None = None
     # данные для 1С
     fio_responsible: str | None = None
     INN_employee: str | None = None
     INN_responsible: str | None = None
     INN_company: str | None = None
+    division_1C: str | None = None
+    schedule_1C: str | None = None
+
     # timesheets: dict | None = None
 
     class Config:
@@ -54,54 +59,100 @@ class STimesheet(BaseModel):
     # Поля СКУД
     skud_day_start_1: datetime | None = None
     skud_day_end_1: datetime | None = None
-    skud_day_duration: int | None = None
-    skud_night_duration: int | None = None
+    skud_day_duration: float | None = None
+    skud_night_duration: float | None = None
     is_day_alter: bool | None = None
     altered_day_duration: int | None = None
     altered_night_duration: int | None = None
     is_night_alter: bool | None = None
     skud_error: bool | None = None
     skud_error_query: str | None = None
-    late_value: int | None = None
+    late_value: float | None = None
+    day_status_short: str | None = None
 
     class Config:
         from_attributes = True
 
 
-class SEmployeeDisplay(SEmployee):
-    fio: str | None = None
-    division: str | None = None
-
-    class Config:
-        from_attributes = True
+class TimeshitTODB(BaseModel):
+    """
+    Табель сотрудника в БД
+    """
+    id: int | None = None
+    date: datetime | None = None
+    # фио сотрудник
+    # employee_id: int
+    employee: SEmployee | None
+    day_status: str | None = None
+    # Поля СКУД
+    skud_day_start_1: datetime | None = None
+    skud_day_end_1: datetime | None = None
+    skud_day_duration: dict | None = None
+    skud_night_duration: float | None = None
+    is_day_alter: bool | None = None
+    altered_day_duration: int | None = None
+    altered_night_duration: int | None = None
+    is_night_alter: bool | None = None
+    skud_error: bool | None = None
+    skud_error_query: str | None = None
+    late_value: float | None = None
+    day_status_short: str | None = None
 
 
 class SDivisions(BaseModel):
+    """
+    Подразделения
+    """
     id: int
     division: str
 
 
+class EmployeeToDB(BaseModel):
+    """
+    Сотрудники в базу данных
+    """
+    id: int | None = None
+    employment_date: datetime | None = None
+    fired_date: datetime | None = None
+    birthday_date: datetime | None = None
+    fio: str
+    job_title: str | None = None
+    rank_title: str | None = None
+    tabel_number: str | None = None
+    tabel_filename: str | None = None
+    tariff_rate: str | None = None
+    division: str | None = None
+    status: str | None = None
+    schedule: str | None = None
+    shift_hours: str | None = None
+    skud_access: str | None = None
+    day_start: str | None = None
+    boss: str | None = None
+    KTR_category: str | None = None
+    KTR: str | None = None
+    has_NAX: str | None = None
+    KNAX: str | None = None
+    KVL: float | None = None
+    KVL_last_month: float | None = None
+    # данные для 1С
+    fio_responsible: str | None = None
+    INN_employee: str | None = None
+    INN_responsible: str | None = None
+    INN_company: str | None = None
+    division_1C: str | None = None
+    schedule_1C: str | None = None
+
+
+# class SEmployeeDisplay(SEmployee):
+#     """
+#     Unimplemented
+#     """
+#     raise NotImplemented
+#     fio: str | None = None
+#     division: str | None = None
 #
-# class Divisions(enum.Enum):
-#     """Список отделов"""
-#     op = 'Основное подразделение'
-#     umk = 'Участок малогабаритных конструкций'
-#     ceh1 = 'Цех №1'
-#     ceh2 = 'ЦЕХ № 2'
-#     ceh3 = 'ЦЕХ № 3'
-#     osn = 'Основное'
-#     otk = 'Отдел технического контроля (ОТК)'
-#     opr = 'Отдел плазменного раскроя'
-#     pto = 'Производственно-технический отдел (ПТО)'
-#     sb = 'Сборочный участок'
-#     p_ceh = 'Производственный цех'
-#     pdo = 'Производственно-диспетчерский отдел'
-#     sklad = 'Отдел складской и транспортной логистики'
-#     puch = 'Производственный участок'
-#     ogt = 'Отдел главного технолога'
-#     pko = 'Производственно-конструкторский отдел'
-#     oit = 'Отдел информационных технологий'
-#     dmto = 'Департамент материально-технического обеспечения (ДМТО)'
+#     class Config:
+#         from_attributes = True
 
 
 if __name__ == '__main__':

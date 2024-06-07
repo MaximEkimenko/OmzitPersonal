@@ -44,19 +44,21 @@ def setup_periodic_tasks(sender, **kwargs):
         # выгрузка из БД
         'data_upload': {
             'task': 'tasks.yesterday_from_db',
-            'schedule': crontab(hour=7, minute=0),
+            'schedule': crontab(hour=0, minute=1),
         },
         # отправка письма
         'email_send': {
             'task': 'tasks.send_notification_mail',
-            'schedule': crontab(hour=7, minute=2),
+            'schedule': crontab(hour=0, minute=2),
         },
-
+        'latecomers': {
+            'task': 'tasks.yesterday_from_db',
+            'schedule': crontab(hour=2, minute=1),
+        },
         'data_upload2': {
             'task': 'tasks.yesterday_from_db',
-            'schedule': crontab(hour=21 - TIMEZONE, minute=0),
+            'schedule': crontab(hour=23 - TIMEZONE, minute=55),
         },
-
     }
 
 

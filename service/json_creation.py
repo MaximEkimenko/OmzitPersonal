@@ -3,7 +3,15 @@ from service.data_prepare import DataPrepare
 import shutil
 from m_logger_settings import logger
 from service.xml_to_json import xml_zup_read
-from constants import BASEDIR
+from constants import BASEDIR, MODE
+from dotenv import load_dotenv
+
+if MODE == 'test':
+    from constants import test_dotenv_path as dotenv_path
+if MODE == 'docker':
+    from constants import dotenv_path as dotenv_path
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
 
 
 def json_creation() -> list:
@@ -13,11 +21,13 @@ def json_creation() -> list:
     """
     # TODO в случае создания UI директории перенести в настройки приложения и передавать функции на входе
     # TODO удалить deprecated функционал
+    onec_dir_xml_zup = os.getenv("ONEC_DIR_XML_ZUP")
+    onec_dir_json = os.getenv("ONEC_DIR_JSON")
     # директория хранения ЗУП xml 1C
-    onec_dir_xml_zup = r'/personal_app/xml_data'  # для docker
+    # onec_dir_xml_zup = r'/personal_app/xml_data'  # для docker
     # onec_dir_xml_zup = r'D:\xml_data'  # для тестов
     # директория хранения переформатированного из xml 1С
-    onec_dir_json = r'/personal_app/xml_data/reformat'  # для docker
+    # onec_dir_json = r'/personal_app/xml_data/reformat'  # для docker
     # onec_dir_json = r'D:\xml_data\reformat'  # для тестов
     # файл excel из xml ЗУП 1C
     xlsx_from_xml_zup = os.path.join(onec_dir_json, 'zup_fios_json_1C.xlsx')
@@ -52,9 +62,9 @@ def json_creation() -> list:
     zup_fios_translate_dict = {'ФИО': 'fio',
                                'ТабНомер': 'tabel_number',
                                'Статус': 'status',
-                               'ГрафикРаботы': 'schedule',
+                               'ГрафикРаботы': 'schedule_1C',
                                'Должность': 'job_title',
-                               'Подразделение': 'division',
+                               'Подразделение': 'division_1C',
                                'ДатаПриема': 'employment_date',
                                'ДатаУвольнения': 'fired_date',
                                'ДатаРождения': 'birthday_date',

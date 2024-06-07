@@ -40,27 +40,28 @@ def bulk_update(data: list) -> None:
     """
     # SELECT строки по фио и статусу в которой другой статус
     for line in data:
-        # запрос
-        stmt = select(Employee.id).where(Employee.status != line['status'],
-                                         Employee.fio == line['fio'])
+        # запрос на существующую запись
+        stmt = select(Employee.id).where(Employee.fio == line['fio'])
+
         with session_factory() as session:
             is_line_exist = session.execute(select(stmt.exists())).scalars().first()
-            if is_line_exist:
+            # if is_line_exist:
                 # id строки
-                line_id = session.execute(stmt).scalars().first()
-                # обновление значения
-                session.execute(update(Employee).where(Employee.id == line_id),
-                                {'status': line['status']})
-                session.commit()
-                logger.debug(f"Обновлено {line}")
-            else:
-                logger.debug(f"{line} - Статус не изменился. Не обновлено")
+            line_id = session.execute(stmt).scalars().first()
+            # обновление значения
+            session.execute(update(Employee).where(Employee.id == line_id),
+                            {'status': line['status'], 'division': line['division'],
+                             'KVL': line['KVL'], 'KVL_last_month': line['KVL_last_month']
+                             })
+            session.commit()
+            logger.debug(f"Обновлено {line}")
+            # else:
+            #     logger.debug(f"{line} - Статус не изменился. Не обновлено")
 
 
 def get_all_data():
     """
     NOT USED
-    :param data:
     :return:
     """
     with session_factory() as session:
@@ -75,9 +76,21 @@ def get_all_divisions():
     :return:
     """
     with session_factory() as session:
-        result = session.execute(select(Employee.division).distinct())
+        result = session.execute(select(Employee.division_1C).distinct())
         divisions = result.scalars().all()
     return tuple(divisions)
+
+
+def get_division(fio: str) -> str or None:
+    """
+    Функция возвращает поле значение поля division записи fio_id
+    :param fio:
+    :return:
+    """
+    with session_factory() as session:
+        exist_query = select(Employee.division).where(Employee.fio == fio)
+        result = session.execute(exist_query).scalars().first()
+    return result
 
 
 def select_line():
@@ -108,4 +121,3 @@ def update_line():
 if __name__ == '__main__':
     print(get_all_divisions())
     pass
-

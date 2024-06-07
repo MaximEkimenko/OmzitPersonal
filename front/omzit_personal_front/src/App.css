@@ -1,0 +1,92 @@
+.app-container {
+    text-align: center;
+}
+
+.control-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+button {
+    margin: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.save-button-container {
+    margin-bottom: 20px;
+}
+
+.save-button {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+}
+
+.toggle-button {
+    background-color: #008cba;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+.button-group {
+    margin: 20px 0;
+}
+
+.division-selector {
+    margin-left: auto;
+}
+
+.date-range-selector {
+    display: flex;
+    align-items: center;
+}
+
+.date-range-selector input {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin: 0 5px;
+}
+
+.date-range-selector button {
+    background-color: #008cba;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+select {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.tabel-title {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.ag-select {
+    width: 100% !important;
+    font-size: large !important;
+    font-weight: bold !important;
+}
+
+.ag-select input {
+    width: 100% !important;
+    font-size: large !important;
+    font-weight: bold !important;
+}

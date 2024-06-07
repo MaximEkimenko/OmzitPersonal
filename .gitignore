@@ -167,5 +167,5 @@ json/
 /json/
 *.sql
 .dockerignore
-front
 tst_in_personal.py
+.env_test

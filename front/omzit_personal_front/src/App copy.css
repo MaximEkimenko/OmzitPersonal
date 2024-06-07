@@ -1,0 +1,119 @@
+.app-container {
+    text-align: center;
+    padding: 20px;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.toggle-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.toggle-button:hover {
+    background-color: #0056b3;
+}
+
+.save-button {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 20px;
+}
+
+.save-button:hover {
+    background-color: #218838;
+}
+
+.ag-theme-alpine .ag-header-cell-label .ag-header-cell-text {
+    font-size: 14px;
+}
+
+.red-flag {
+    color: red;
+    background-color: #ffdbdb;
+}
+
+.red-flag:hover {
+    background-color: #dedffc;
+}
+
+.green-flag {
+    color: green;
+    background-color: #dbfff2;
+}
+
+.green-flag:hover {
+    /* color: green; */
+    background-color: #dedffc;
+}
+
+/* .ag-cell red-flag {
+  color: red;
+  background-color: #fff2f2;
+}
+
+.ag-cell green-flag {
+  color: green;
+  background-color: #f2fff8;
+}
+
+.ag-cell red-flag:hover .ag-cell {
+  background-color: #fff2f2;
+}
+
+.ag-cell green-flag:hover .ag-cell {
+  color: green;
+  background-color: #f2fff8;
+} */
+
+.ag-theme-alpine .ag-cell {
+    text-align: center;
+    font-size: 16px;
+    /* border: 1px 0 1px 0 solid; */
+    border-left-color: rgba(0, 0, 0, 0);
+    border-left-style: solid;
+    border-left-width: 1px;
+    border-right-color: rgb(186, 191, 199);
+    border-right-style: solid;
+    border-right-width: 1px;
+}
+
+/* .ag-theme-alpine:hover {
+  color: red;
+} */
+
+/* .ag-input-focus-box:hover {
+  color: red !important;
+  background-color: red !important;
+} */
+
+/* .ag-cell:hover {
+  background-color: #a8b7ff !important;
+} */
+
+/* .ag-row:hover {
+  background-color: #a8b7ff !important;
+} */
+
+/* .ag-column:hover {
+  background-color: #a8b7ff !important;
+} */
+
+.date-header .ag-header-cell-label .ag-header-cell-text {
+    font-size: 11px;
+}

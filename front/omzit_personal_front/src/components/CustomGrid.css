@@ -1,0 +1,84 @@
+.ag-theme-alpine .ag-header-cell-label .ag-header-cell-text,
+.ag-theme-alpine .ag-cell-value {
+    text-align: center;
+}
+
+.ag-theme-alpine .ag-header-cell-label .ag-header-cell-text {
+    font-size: 16px;
+}
+
+.ag-theme-alpine .ag-cell {
+    text-align: center;
+    font-size: 16px;
+    border-left-color: rgba(0, 0, 0, 0);
+    border-left-style: solid;
+    border-left-width: 1px;
+    border-right-color: rgb(186, 191, 199);
+    border-right-style: solid;
+    border-right-width: 1px;
+}
+
+.date-header .ag-header-cell-label .ag-header-cell-text {
+    font-size: 14px;
+}
+
+/* Стили для выпадающего списка */
+.ag-theme-alpine .ag-cell-editor {
+    height: auto;
+    width: auto;
+}
+
+.ag-theme-alpine .ag-cell-editor .ag-select {
+    height: 100%;
+    width: 100%;
+    border: none;
+    background-color: transparent;
+}
+
+.ag-theme-alpine .ag-cell-editor .ag-select-list {
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 9999;
+}
+
+.ag-theme-alpine .ag-cell-editor .ag-select-option {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.ag-theme-alpine .ag-cell-editor .ag-select-option:hover {
+    background-color: #f0f0f0;
+}
+
+.red-flag {
+    color: red;
+    background-color: #ffebeb;
+}
+
+.red-flag:hover {
+    background-color: #dedffc;
+}
+
+.green-flag {
+    color: green;
+    background-color: #ebfff4;
+}
+
+.green-late-flag {
+    color: green;
+    background-color: #ebfff4;
+}
+
+.red-late-flag {
+    color: red;
+    background-color: #ffebeb;
+}
+
+.green-absent-flag {
+    color: green;
+    background-color: #ebfff4;
+}
+
+.green-flag:hover {
+    background-color: #dedffc;
+}

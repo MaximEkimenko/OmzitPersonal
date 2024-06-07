@@ -1,0 +1,65 @@
+/* Увеличение шрифта в таблице */
+h1 {
+    margin-top: 50px;
+}
+
+.ag-theme-alpine {
+    font-size: 18px;
+}
+
+/* Центрирование заголовков колонок */
+.ag-header-cell-label {
+    justify-content: center;
+}
+
+/* Жирный шрифт для колонки "Значение" */
+.ag-theme-alpine .ag-cell-value[col-id='value'] {
+    font-weight: bold;
+}
+
+/* Центрирование таблицы */
+.ag-theme-alpine {
+    margin: 0 auto;
+}
+
+/* Дополнительные стили для улучшения внешнего вида */
+
+/* Изменение цвета фона заголовка */
+.ag-theme-alpine .ag-header {
+    background-color: #f0f0f0;
+}
+
+/* Изменение цвета рамки таблицы */
+.ag-theme-alpine .ag-root-wrapper {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+/* Добавление отступов вокруг таблицы */
+.ag-theme-alpine .ag-root-wrapper {
+    padding: 20px;
+}
+
+/* Изменение цвета фона строк */
+.ag-theme-alpine .ag-row {
+    background-color: #fafafa;
+}
+
+.ag-theme-alpine .ag-row:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+/* Изменение цвета при наведении на строки */
+.ag-theme-alpine .ag-row:hover {
+    background-color: #e0e0e0;
+}
+
+/* Изменение цвета фона активной ячейки */
+.ag-theme-alpine .ag-row-selected,
+.ag-theme-alpine .ag-cell-focus {
+    background-color: #d0d0d0 !important;
+}
+
+.ag-select {
+    width: 100% !important;
+}

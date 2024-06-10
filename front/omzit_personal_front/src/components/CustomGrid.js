@@ -15,6 +15,11 @@ const CustomGrid = forwardRef(
         useImperativeHandle(ref, () => ({
             api: gridRef.current.api,
             columnApi: gridRef.current.columnApi,
+            ensureColumnVisible: (field) => {
+                if (gridRef.current.api) {
+                    gridRef.current.api.ensureColumnVisible(field)
+                }
+            },
         }))
 
         // useImperativeHandle(ref, () => ({

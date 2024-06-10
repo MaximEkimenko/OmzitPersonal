@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useImperativeHandle } from 'react'
 import CustomGrid from './components/CustomGrid'
 import ToggleButtons from './components/ToggleButtons'
 import SaveButton from './components/SaveButton'
@@ -16,6 +16,14 @@ import {
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import EmployeeDetails from './components/EmployeeDetails'
 import CompanyRenderer from './companyRenderer.jsx'
+
+const isWeekend = (dateString) => {
+    const date = new Date(dateString)
+    const day = date.getDay()
+    return day === 0 || day === 6 // Sunday or Saturday
+}
+
+const today = new Date()
 
 const App = () => {
     const [rowData, setRowData] = useState([])
@@ -36,7 +44,7 @@ const App = () => {
         setEndDate(lastDayOfMonth.toISOString().split('T')[0])
     }, [])
 
-    const baseUrl = 'http://192.168.8.163:8005'
+    const baseUrl = 'http://192.168.8.163:8004'
     // const baseUrl = 'http://192.168.8.163:5001'
 
     useEffect(() => {
@@ -69,7 +77,7 @@ const App = () => {
             const date = item.date.split('T')[0]
             const value = isLate ? item.late_value : item.skud_day_duration
             const dayStatus = item.day_status_short
-
+            console.log(dayStatus)
             if (!employees[fio]) {
                 employees[fio] = { division, jobTitle, fio_id }
             }
@@ -117,9 +125,6 @@ const App = () => {
                 lockPosition: true,
                 cellStyle: { textAlign: 'center' },
                 cellRenderer: CompanyRenderer,
-                // onCellClicked: (e) => {
-                //     window.location.replace(`/employee/${employees[e.data.fio].fio_id}/`)
-                // },
             },
             {
                 headerName: 'Подразделение',
@@ -148,6 +153,9 @@ const App = () => {
                     'green-late-flag': (params) => Number(params.value) === 0 && isLateView,
                     'green-absent-flag': (params) =>
                         ['А', 'Б', 'В', 'К', 'О'].includes(params.value),
+                    'weekend-flag': (params) => isWeekend(params.colDef.field),
+                    'today-flag': (params) =>
+                        params.colDef.field === today.toISOString().split('T')[0],
                 },
                 cellStyle: { textAlign: 'center', fontSize: '20px', fontWeight: 'bold' },
                 cellEditor: 'agSelectCellEditor',
@@ -157,7 +165,7 @@ const App = () => {
                     //     '9.5', '10', '10.5', '11', '11.5', '12', '12.5', '13', '13.5', '14',
                     //     'А', 'Б', 'В', 'О', 'К',
                     // ],
-                    values: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',  '11',  '12',  '13',  '14', 
+                    values: ['','0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',  '11',  '12',  '13',  '14', 
                         'А', 'Б', 'В', 'О', 'К',
                     ],
                 },

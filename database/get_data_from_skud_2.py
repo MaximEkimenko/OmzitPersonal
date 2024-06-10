@@ -28,8 +28,6 @@ def query_create(query_type: str,
                  start_date: str = None,
                  end_date: str = None,
                  access_point: str = 'Турникет') -> str:
-
-
     """
     :param query_type: variants = 'enter', 'exit', 'late_800', 'late_830'
     :param start_date:
@@ -110,7 +108,7 @@ def query_execute(query: str) -> tuple:
     """
     Выполнение запроса query
     :param query: текст запроса
-    :param driver: sql driver для
+    test: sql driver для
     docker: f'DRIVER=/opt/microsoft/msodbcsql17/lib64/libmsodbcsql-17.10.so.6.1;'
     :return:
     """
@@ -279,7 +277,7 @@ def insert_enters(enters: list = None, access_point: str = None):
     :param enters:
     :return:
     """
-    start_date = datetime.date.today().strftime("%Y-%d-%m")
+    start_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%d-%m")
     end_date = (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%d-%m")
     insert_data = []
     if not enters:
@@ -362,8 +360,8 @@ def get_latecomers(date: str = None, late_time: str = '08:01'):
 if __name__ == '__main__':
 
     # get_latecomers()
-    st_date = '2024-01-06'
-    en_date = '2024-10-06'
+    st_date = '2024-05-06'
+    en_date = '2024-12-06'
 
     access_points = ('122', '312', 'Турникет')
     for access_point in access_points:

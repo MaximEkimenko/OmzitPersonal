@@ -82,6 +82,14 @@ class Timesheet(Base):
     late_value: Mapped[Optional[float]] = mapped_column(Float)
 
 
+class CalendarDays(Base):
+    """Модель дней """
+    __tablename__ = 'calendar_days'
+    id: Mapped[intpk]
+    date: Mapped[date_type]   # дата
+    day_type: Mapped[str] = mapped_column(String)  # тип дня (выходной, рабочий, сокращённый)
+
+
 # class Latecomers(Base):
 #     """Модель опоздунов """
 #     __tablename__ = 'latecomers'

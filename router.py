@@ -12,6 +12,7 @@ from typing import List, Annotated
 
 from database.database import get_db, get_aync_db
 from database.database import db_dependency
+from database.schedule_calculation import schedule_5_2
 
 async_db_dependency = Annotated[AsyncSession, Depends(get_aync_db)]
 
@@ -177,5 +178,8 @@ async def save_employee(db: db_dependency, request: EmployeeToDB):
                                                                          'schedule': fio_schedule})
     db.execute(update_query)
     db.commit()
+    # запуск обновления данных при изменении графика на 5/2
+    if fio_schedule == '5/2':
+        schedule_5_2(fio_id)
     return {'status': 'ok'}
 

@@ -5,10 +5,9 @@ import json, os
 from m_logger_settings import logger
 from constants import BASEDIR
 from service.kvl_calculation import kvl_calculation
-from service.division_accunulation import division_accumulation
+from service.fields_defaults import division_accumulation, schedule_filler
 from constants import MODE
 from dotenv import load_dotenv
-
 
 if MODE == 'test':
     from constants import test_dotenv_path as dotenv_path
@@ -43,13 +42,16 @@ def clean_data(json_data: list) -> list:
                 # Добавление КВЛ
                 kvl_today, kvl_last_month = kvl_calculation(one_fio_dict[key]['employment_date'])
                 one_fio_dict[key].update({'KVL': kvl_today, 'KVL_last_month': kvl_last_month})
-                # объединение мусорных подразделений (только для новых записей)
-                true_division = division_accumulation(one_fio_dict[key]['fio'],
-                                                      one_fio_dict[key]['division_1C'])
-                if true_division:
-                    one_fio_dict[key].update({'division': true_division})
-                else:
-                    one_fio_dict[key].update({'division': one_fio_dict[key]['division_1C']})
+
+                # объединение мусорных подразделений
+                true_division = division_accumulation(division_1C=one_fio_dict[key]['division_1C'])
+                # if true_division:
+                one_fio_dict[key].update({'division': true_division})
+                # добавление графика работы
+                true_schedule = schedule_filler(division=true_division, schedule_1C=one_fio_dict[key]['schedule_1C'])
+                one_fio_dict[key].update({'schedule': true_schedule})
+               # true_schedule = schedule_accumulation(schedule_1C=one_fio_dict[key]['schedule_1C'])
+                # one_fio_dict[key].update({'schedule': true_schedule})
                 # определение самого позднего документа по ФИО с фильтровкой совместительства
                 date = datetime.datetime.strptime(key, '%d.%m.%Y')
                 if one_fio_dict[key]['job_type'] == 'Основное место работы':

@@ -21,7 +21,7 @@ const EmployeeDetails = ({ baseUrl }) => {
                 const data = await fetchDataFromAPI(`${baseUrl}/e/get_employee/${fio}`)
                 setOriginalDataFio(data.fio)
                 setOriginalData(data)
-                // console.log(data)
+                console.log(data)
                 const cellEditorSelector = (params) => {
                     if (params.data.type === 'division') {
                         return {

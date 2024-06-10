@@ -82,3 +82,11 @@
 .green-flag:hover {
     background-color: #dedffc;
 }
+
+.weekend-flag {
+    background-color: #faf3b7;
+}
+
+.today-flag {
+    background-color: #ff8801;
+}

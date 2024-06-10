@@ -7,7 +7,7 @@ try:
 except Exception:
     from models import Employee, Timesheet
 
-from sqlalchemy import select, insert, update
+from sqlalchemy import select, insert, update, exists
 from m_logger_settings import logger
 
 
@@ -17,6 +17,7 @@ def bulk_add(data: list) -> None:
     :param data:
     :return:
     """
+    # TODO объединить с update?
     for line in data:
         # запрос проверка существования ФИО в БД
         stmt = select(Employee.fio).where(Employee.fio == line['fio']).exists()
@@ -38,25 +39,25 @@ def bulk_update(data: list) -> None:
     :param data:
     :return:
     """
-    # SELECT строки по фио и статусу в которой другой статус
+    # TODO объединить с add?
     for line in data:
         # запрос на существующую запись
-        stmt = select(Employee.id).where(Employee.fio == line['fio'])
-
+        division = line.get('division', None)
+        stmt = select(Employee.id).where(Employee.fio == line['fio'],
+                                         Employee.division == division)
         with session_factory() as session:
+            # id строки
             is_line_exist = session.execute(select(stmt.exists())).scalars().first()
-            # if is_line_exist:
-                # id строки
             line_id = session.execute(stmt).scalars().first()
             # обновление значения
-            session.execute(update(Employee).where(Employee.id == line_id),
-                            {'status': line['status'], 'division': line['division'],
-                             'KVL': line['KVL'], 'KVL_last_month': line['KVL_last_month']
-                             })
+            if is_line_exist:
+                session.execute(update(Employee).where(Employee.id == line_id),
+                                {'status': line['status'],
+                                 'KVL': line['KVL'],
+                                 'KVL_last_month': line['KVL_last_month'],
+                                 })
             session.commit()
             logger.debug(f"Обновлено {line}")
-            # else:
-            #     logger.debug(f"{line} - Статус не изменился. Не обновлено")
 
 
 def get_all_data():
@@ -88,8 +89,8 @@ def get_division(fio: str) -> str or None:
     :return:
     """
     with session_factory() as session:
-        exist_query = select(Employee.division).where(Employee.fio == fio)
-        result = session.execute(exist_query).scalars().first()
+        exist_query = select(exists().where(Employee.fio == fio))
+        result = session.execute(exist_query).scalar()
     return result
 
 

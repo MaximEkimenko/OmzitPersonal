@@ -15,11 +15,14 @@ const ToggleButtons = ({
     }
     return (
         <div className='button-group'>
+            <button className='toggle-button' onClick={focusTodayColumn}>
+                Сегодня
+            </button>
             <button className='toggle-button' onClick={() => toggleColumn('division')}>
-                Скрыть/Показать подразделение
+                Подразделение
             </button>
             <button className='toggle-button' onClick={() => toggleColumn('jobTitle')}>
-                Скрыть/Показать должность
+                Должность
             </button>
             {/* <button className='toggle-button' onClick={toggleColumnsBeforeToday}>
             Скрыть/Показать даты до сегодняшней
@@ -27,11 +30,9 @@ const ToggleButtons = ({
         <button className='toggle-button' onClick={toggleColumnsAfterToday}>
             Скрыть/Показать даты после сегодняшней
         </button> */}
-            <button className='toggle-button' onClick={focusTodayColumn}>
-                Фокус на сегодня
-            </button>
+
             <button onClick={toggleLateView} className='toggle-button'>
-                {isLateView ? 'Показать табель' : 'Показать опоздания'}
+                {isLateView ? 'Табель' : 'Опоздания'}
             </button>
         </div>
     )

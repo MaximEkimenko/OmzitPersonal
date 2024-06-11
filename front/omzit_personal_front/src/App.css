@@ -1,3 +1,9 @@
+h1 {
+    font-size: 24px;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
 .app-container {
     text-align: center;
 }
@@ -6,7 +12,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 0;
 }
 
 button {
@@ -17,7 +23,7 @@ button {
 }
 
 .save-button-container {
-    margin-bottom: 20px;
+    margin-bottom: 0;
 }
 
 .save-button {
@@ -36,7 +42,10 @@ button {
 }
 
 .button-group {
-    margin: 20px 0;
+    /* margin: 20px 0; */
+    /* position: relative; */
+    top: 10px;
+    left: 500px;
 }
 
 .division-selector {
@@ -76,7 +85,6 @@ select {
 .tabel-title {
     display: flex;
     justify-content: center;
-    margin-bottom: 20px;
 }
 
 .ag-select {
@@ -89,4 +97,11 @@ select {
     width: 100% !important;
     font-size: large !important;
     font-weight: bold !important;
+}
+
+.night-flag {
+    font-size: 14px !important;
+    color: white !important;
+    background-color: #3855d8;
+    /* background-color */
 }

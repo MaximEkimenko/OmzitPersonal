@@ -8,6 +8,7 @@ from m_logger_settings import logger
 from database.get_data_from_skud_2 import skud_tabel_insert, insert_enters
 from database.schedule_calculation import schedule_5_2
 
+
 def schedule_db_refresh(start_date=None, end_date=None):
     """
     Функция выполняет сбор из БД СКУД и запись в БД personal данных с даты start_date до end_date
@@ -60,7 +61,8 @@ def schedule_db_refresh(start_date=None, end_date=None):
             for access_point in access_points:
                 skud_tabel_insert(start_date=start_date, end_date=end_date, access_point=access_point)
                 insert_enters(access_point=access_point)
-                schedule_5_2()  # заполнение выходных при графике 5/2
+                # TODO сделать только 1 раз при полном добавлении, либо сделать одним запросом
+                # schedule_5_2()  # заполнение выходных при графике 5/2
             # get_skud_data(date_start=start_date, date_end=end_date)
             logger.info(f"Загрузка в БД personal за период {start_date} - {end_date} выполнена.")
         except Exception as e:
@@ -69,8 +71,8 @@ def schedule_db_refresh(start_date=None, end_date=None):
 
 
 if __name__ == '__main__':
-    end_date_tst = (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%d-%m")
-    start_date_tst = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%d-%m")
+    end_date_tst = (datetime.date.today() + datetime.timedelta(days=10)).strftime("%Y-%d-%m")
+    start_date_tst = (datetime.date.today() - datetime.timedelta(days=10)).strftime("%Y-%d-%m")
 
     schedule_db_refresh(start_date=start_date_tst, end_date=end_date_tst)
 

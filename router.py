@@ -111,55 +111,73 @@ async def save_timesheet(db: db_dependency, request: List[TimeshitTODB]):
     """
     status_dict = {'О': 'Отпуск', 'Б': 'Больничный', 'В': 'Выходной', 'К': 'Командировка',
                    'А': 'Административный отпуск'}
+
     for timesheet in request:
         for date, skud_value in timesheet.skud_day_duration.items():
+            if skud_value == '':
+                continue
             # подготовка данных
+            # print(skud_value)
             date = datetime.datetime.strptime(date, '%Y-%m-%d')
-            fio = timesheet.employee.fio
+            # fio = timesheet.employee.fio
             fio_id = timesheet.employee.id
             late_value = timesheet.late_value
+            skud_night_duration = 0
             # print(late_value)
             if skud_value != '':
-                if skud_value in status_dict:
+                if '|' in skud_value:
+                    day_status = 'явка'
+                    day_time, night_time = skud_value.split('|')
+                    skud_day_duration = float(day_time[1:])
+                    # print(f"{skud_day_duration=}")
+                    skud_night_duration = float(night_time[1:])
+                    # print(f"{skud_night_duration=}")
+                    day_status_short = 'Я'
+                    late_value = 0
+                # буквенный статус
+                elif skud_value in status_dict:
                     day_status = status_dict.get(skud_value)
                     day_status_short = skud_value
                     skud_day_duration = 0
                     late_value = 0
+                # отсутствие
                 elif skud_value == '0':
+                    # print(skud_value)
                     day_status = 'Отсутствие'
                     skud_day_duration = 0
                     day_status_short = skud_value
                     late_value = 0
+                # ночные / дневные
                 else:
                     day_status = 'Явка'
                     day_status_short = 'Я'
                     skud_day_duration = float(skud_value)
-                # print(fio_id, fio, date, day_status, day_status_short, skud_day_duration)
                 # существующие записи
-                exist_query = select(Timesheet.employee_id, Timesheet.date).where(
-                    Timesheet.employee_id == fio_id,
-                    Timesheet.date == date)
+                exist_query = select(Timesheet).where(Timesheet.employee_id == fio_id,
+                                                      Timesheet.date == date)
                 existing_record = db.execute(exist_query).fetchone()
-
                 if existing_record:
-                    print('\n', existing_record, fio)
-                    # обновление записи
-                    update_query = update(Timesheet).where(
-                        Timesheet.employee_id == fio_id,
-                        Timesheet.date == date).values({'day_status': day_status,
-                                                        'skud_day_duration': skud_day_duration,
-                                                        'day_status_short': day_status_short,
-                                                        'late_value': late_value})
-                    db.execute(update_query)
-                    db.commit()
+                    # проверка изменений
+                    if existing_record[0].day_status == day_status:
+                        continue
+                    elif existing_record:
+                        update_query = (update(Timesheet).where(Timesheet.employee_id == fio_id,
+                                                                Timesheet.date == date)
+                                        .values({'day_status': day_status,
+                                                 'skud_day_duration': skud_day_duration,
+                                                 'day_status_short': day_status_short,
+                                                 'late_value': late_value,
+                                                 'skud_night_duration': skud_night_duration}))
+                        db.execute(update_query)
+                        db.commit()
                 else:
                     # добавление новой записи
                     new_record = Timesheet(employee_id=fio_id, date=date, day_status=day_status,
                                            skud_day_duration=skud_day_duration, day_status_short=day_status_short,
-                                           late_value=late_value)
+                                           late_value=late_value, skud_night_duration=skud_night_duration)
                     db.add(new_record)
                     db.commit()
-    return new_record
+    return 'ok'
 
 
 @router.post('/save_employee')
@@ -182,4 +200,3 @@ async def save_employee(db: db_dependency, request: EmployeeToDB):
     if fio_schedule == '5/2':
         schedule_5_2(fio_id)
     return {'status': 'ok'}
-

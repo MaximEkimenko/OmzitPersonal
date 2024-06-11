@@ -35,7 +35,9 @@ const App = () => {
     const [endDate, setEndDate] = useState('')
     const [isLateView, setIsLateView] = useState(false)
     const [notification, setNotification] = useState({ message: '', type: '' })
+    const [isModified, setIsModified] = useState(false)
     const gridRef = useRef()
+
     useEffect(() => {
         const today = new Date()
         const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 2)
@@ -70,14 +72,15 @@ const App = () => {
         const dates = getDaysInMonth(startDate, endDate)
         data.forEach((item) => {
             const fio_id = item.employee.id
-            const kvl = item.employee.KVL
+            // const skud_night_duration = item.skud_night_duration
+            // console.log(skud_night_duration)
+            // const kvl = item.employee.KVL
             const fio = item.employee.fio
             const division = item.employee.division
             const jobTitle = item.employee.job_title
             const date = item.date.split('T')[0]
             const value = isLate ? item.late_value : item.skud_day_duration
             const dayStatus = item.day_status_short
-            console.log(dayStatus)
             if (!employees[fio]) {
                 employees[fio] = { division, jobTitle, fio_id }
             }
@@ -87,6 +90,7 @@ const App = () => {
                 fio_id: fio_id,
                 late_value: item.late_value,
                 kvl: item.employee.KVL,
+                skud_night_duration: item.skud_night_duration,
             }
         })
 
@@ -101,10 +105,13 @@ const App = () => {
             let sum = 0
             dates.forEach((date) => {
                 const dayData = employees[fio][date] || {}
-                const value =
-                    dayData.day_status && dayData.day_status !== 'Я'
-                        ? dayData.day_status
-                        : dayData.skud_day_duration || ''
+                // prettier-ignore
+                const value = 
+                !dayData.skud_night_duration // если нет ночных
+                    ? (dayData.day_status && dayData.day_status !== 'Я'  // если не явка 
+                        ? dayData.day_status  // заполняем буквенный статус
+                        : dayData.skud_day_duration || '') // заполняем скуд дня
+                    : `Д${dayData.skud_day_duration}|Н${dayData.skud_night_duration}` // заполняем скуд с ночью
                 row[date] = value
 
                 const numericValue = parseFloat(dayData.skud_day_duration)
@@ -146,6 +153,7 @@ const App = () => {
                 field: date,
                 editable: true,
                 hide: hiddenColumns.includes(date),
+
                 cellClassRules: {
                     'red-flag': (params) => Number(params.value) < 8 && !isLateView,
                     'green-flag': (params) => Number(params.value) >= 8 && !isLateView,
@@ -156,6 +164,7 @@ const App = () => {
                     'weekend-flag': (params) => isWeekend(params.colDef.field),
                     'today-flag': (params) =>
                         params.colDef.field === today.toISOString().split('T')[0],
+                    'night-flag': (params) => params.value.includes('|'),
                 },
                 cellStyle: { textAlign: 'center', fontSize: '20px', fontWeight: 'bold' },
                 cellEditor: 'agSelectCellEditor',
@@ -190,10 +199,10 @@ const App = () => {
     }
 
     const onCellValueChanged = (params) => {
+        setIsModified(true)
         const updatedRowData = rowData.map((row) => {
             if (row.fio === params.data.fio) {
                 const updatedRow = { ...row, [params.colDef.field]: params.newValue }
-
                 let sum = 0
                 Object.keys(updatedRow).forEach((key) => {
                     if (
@@ -240,8 +249,10 @@ const App = () => {
                         updatedEmployeeData.employee.job_title = row[key]
                     }
                 })
+                // console.log(updatedEmployeeData)
                 return updatedEmployeeData
             })
+
             const response = await fetch(`${baseUrl}/e/save`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -310,14 +321,21 @@ const App = () => {
                         path='/'
                         element={
                             <>
+                                <ToggleButtons
+                                    toggleColumn={toggleColumn}
+                                    toggleColumnsBeforeToday={toggleColumnsBeforeToday}
+                                    toggleColumnsAfterToday={toggleColumnsAfterToday}
+                                    focusTodayColumn={focusTodayColumn}
+                                    isLateView={isLateView}
+                                    setIsLateView={setIsLateView}
+                                />
                                 <h1>
                                     {isLateView
                                         ? `Опоздания ${selectedDivision}`
                                         : `Табель ${selectedDivision}`}
                                 </h1>
                                 <div className='control-panel'>
-                                    <SaveButton handleSave={handleSave} />
-                                    {/* {isLateView ? '' : <SaveButton handleSave={handleSave} />} */}
+                                    {isModified && <SaveButton handleSave={handleSave} />}
                                     <DivisionSelector
                                         onSelectDivision={setSelectedDivision}
                                         baseUrl={baseUrl}
@@ -330,14 +348,6 @@ const App = () => {
                                     />
                                 </div>
 
-                                <ToggleButtons
-                                    toggleColumn={toggleColumn}
-                                    toggleColumnsBeforeToday={toggleColumnsBeforeToday}
-                                    toggleColumnsAfterToday={toggleColumnsAfterToday}
-                                    focusTodayColumn={focusTodayColumn}
-                                    isLateView={isLateView}
-                                    setIsLateView={setIsLateView}
-                                />
                                 <CustomGrid
                                     ref={gridRef}
                                     rowData={rowData}

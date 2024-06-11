@@ -7,6 +7,7 @@ import pyodbc
 from dotenv import load_dotenv
 from constants import dotenv_path
 from constants import MODE
+
 if MODE == 'test':
     from constants import test_dotenv_path as dotenv_path
 if MODE == 'docker':
@@ -180,11 +181,11 @@ def get_tabel_skud(start_date: str = None, end_date: str = None, access_point: s
                         launch_time = datetime.timedelta(hours=1)
                     else:
                         launch_time = datetime.timedelta(hours=0)
-                    if fio_enter > work_time_start:  # опоздания
-                        late_value = math.floor((fio_enter - work_time_start).seconds/60)
+                    if fio_enter > work_time_start and access_point == 'Турникет':  # опоздания
+                        late_value = math.floor((fio_enter - work_time_start).seconds / 60)
                     else:
                         late_value = 0
-                    skud_day_duration = math.floor((fio_out - fio_enter - launch_time).seconds/3600 * 2) / 2
+                    skud_day_duration = math.floor((fio_out - fio_enter - launch_time).seconds / 3600 * 2) / 2
                     skud_error = False
 
                 # сохранение результатов
@@ -228,8 +229,6 @@ def skud_tabel_insert(start_date: str = None, end_date: str = None, access_point
                 existing_record = session.query(Timesheet).filter(
                     Timesheet.employee_id == fio_id, Timesheet.date == date
                 ).first()
-                # print(existing_record)
-
                 if existing_record:
                     # Подготовка данных для обновления
                     update_data.append({
@@ -246,18 +245,18 @@ def skud_tabel_insert(start_date: str = None, end_date: str = None, access_point
         # Выполнение пакетного обновления
         if update_data:
             for record in update_data:
-                if record.get('skud_day_end_1', None):  # обновляем только если был выход
+                # if record.get('skud_day_end_1', None):  # обновляем только если был выход
                     # print(record)
-                    session.execute(
-                        update(Timesheet).
-                        where(Timesheet.employee_id == record['employee_id'],
-                              Timesheet.date == record['date']
-                              ).
-                        values(**{k: v for k, v in record.items() if k not in ['employee_id', 'date']})
-                    )
-                else:
-                    logger.info(f"Данные выхода {record['skud_day_end_1']} для "
-                                f"{record['fio']} не обновились")
+                session.execute(
+                    update(Timesheet).
+                    where(Timesheet.employee_id == record['employee_id'],
+                          Timesheet.date == record['date']
+                          ).
+                    values(**{k: v for k, v in record.items() if k not in ['employee_id', 'date']})
+                )
+            # else:
+            #     logger.info(f"Данные выхода {record['skud_day_end_1']} для "
+            #                 f"{record['fio']} не обновились")
             session.commit()
             # logger.debug(f'Обновлена запись {record} ')
             logger.info(f"Обновлено {len(update_data)} записей")
@@ -287,13 +286,16 @@ def insert_enters(enters: list = None, access_point: str = None):
         # Получение всех fio и их id из таблицы Employee
         fios = {employee.fio: employee.id for employee in session.execute(select(Employee)).scalars().all()}
         for line in enters:
+            # print(line)
             fio = line[4]
             fio_id = fios.get(fio)
             enter_datetime = line[2]
+            # print(enter_datetime)
             work_time_start = datetime.datetime(year=enter_datetime.year, month=enter_datetime.month,
                                                 day=enter_datetime.day, hour=8, minute=0)
-            if enter_datetime > work_time_start:
-                late_value = math.ceil((enter_datetime - work_time_start).seconds / 60)
+            if enter_datetime > work_time_start and access_point == 'Турникет':
+                # print(enter_datetime.day == work_time_start.day)
+                late_value = math.floor((enter_datetime - work_time_start).seconds / 60)
             else:
                 late_value = 0
             date = datetime.datetime(year=enter_datetime.year, month=enter_datetime.month, day=enter_datetime.day,
@@ -338,18 +340,18 @@ def get_latecomers(date: str = None, late_time: str = '08:01'):
     # Получение списка опоздавших из БД OmzitPersonal
     with session_factory() as session:
         res = session.query(Timesheet).where(Timesheet.skud_day_start_1 >= date)
-        late_comers = [{'fio': row.employee.fio,
-                        'day_start': row.skud_day_start_1,
-                        'late_value': round((row.skud_day_start_1 - date).seconds / 60, 1),
-                        'division': row.employee.division} for row in res]
+        latecomers = [{'fio': row.employee.fio,
+                       'day_start': row.skud_day_start_1,
+                       'late_value': math.floor((row.skud_day_start_1 - date).seconds / 60),
+                       'division': row.employee.division} for row in res]
 
-    return late_comers
-    # print(len(late_comers))
-    # print(late_comers)
+    return latecomers
+    # print(len(latecomers))
+    # print(latecomers)
 
     # print(res)
     # print(res)
-    # print(late_comers)
+    # print(latecomers)
 
     # Фиксация опоздавших?
     # Получение списка из СКУД
@@ -358,7 +360,6 @@ def get_latecomers(date: str = None, late_time: str = '08:01'):
 
 
 if __name__ == '__main__':
-
     # get_latecomers()
     st_date = '2024-05-06'
     en_date = '2024-12-06'
@@ -367,7 +368,8 @@ if __name__ == '__main__':
     for access_point in access_points:
         skud_tabel_insert(start_date=st_date, end_date=en_date, access_point=access_point)
         insert_enters(access_point=access_point)
-
+    # print(get_latecomers())
+    # insert_enters(access_point='312')
     # skud_tabel_insert(start_date=st_date, end_date=en_date)
     # insert_enters()
     # print(get_latecomers())

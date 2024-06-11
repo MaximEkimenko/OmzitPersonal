@@ -99,15 +99,15 @@ LOGGING_CONFIG = {
             "maxBytes": 102400000,
             "backupCount": 3,
         },
-        "json": {
-            "encoding": "utf-8",
-            "level": "DEBUG",
-            "formatter": "json",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": log_file_json,
-            "maxBytes": 102400000,
-            "backupCount": 3,
-        },
+        # "json": {
+        #     "encoding": "utf-8",
+        #     "level": "DEBUG",
+        #     "formatter": "json",
+        #     "class": "logging.handlers.RotatingFileHandler",
+        #     "filename": log_file_json,
+        #     "maxBytes": 102400000,
+        #     "backupCount": 3,
+        # },
         # "queue_handler": {
         #     "class": "logging.handlers.QueueHandler",
         #     "handlers": [
@@ -118,7 +118,8 @@ LOGGING_CONFIG = {
     },
     "loggers": {
         "logger": {
-            "handlers": ["json", "console", "file_debug"],
+            "handlers": ["console", "file_debug"],
+            # "handlers": ["json", "console", "file_debug"],
             "level": "DEBUG",
         },
         # "logger": {

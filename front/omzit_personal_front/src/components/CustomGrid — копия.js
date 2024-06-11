@@ -4,6 +4,8 @@ import 'ag-grid-community/styles/ag-grid.css'
 import 'ag-grid-community/styles/ag-theme-alpine.css'
 import './CustomGrid.css' // Импортируем CSS
 import { AG_GRID_LOCALE_RU } from '../locale/locale'
+// import { ModuleRegistry } from '@ag-grid-community/core'
+// ModuleRegistry.registerModules([MenuModule])
 
 const CustomGrid = forwardRef(
     ({ rowData, columnDefs, onCellValueChanged, onCellDoubleClicked }, ref) => {
@@ -31,11 +33,11 @@ const CustomGrid = forwardRef(
             setSelectedCell(params)
         }
 
-        const handleFillNightShift = () => {
-            if (!selectedCell) return
+        const handleFillNightShift = (params) => {
+            if (!params.data) return
 
-            const dayValue = parseFloat(prompt('Табель ДЕНЬ (не более 12)'))
-            const nightValue = parseFloat(prompt('Табель НОЧЬ (не более 12)'))
+            const dayValue = parseFloat(prompt('Введите значение для дня (не более 12)'))
+            const nightValue = parseFloat(prompt('Введите значение для ночи (не более 12)'))
 
             if (isNaN(dayValue) || isNaN(nightValue)) {
                 alert('Некорректный ввод. Пожалуйста, введите числовое значение.')
@@ -47,21 +49,22 @@ const CustomGrid = forwardRef(
                 return
             }
 
-            const displayValue = `Д${dayValue}|Н${nightValue}`
-            selectedCell.data[selectedCell.colDef.field] = displayValue
+            const displayValue = `${dayValue}/${nightValue}`
+            params.data[params.colDef.field] = displayValue
+            params.data.skud_day_duration[params.colDef.field] = {
+                day: dayValue,
+                night: nightValue,
+            }
 
             // Обновляем таблицу
-            selectedCell.api.refreshCells({
-                columns: [selectedCell.colDef.field],
-                rowNodes: [selectedCell.node],
+            params.api.refreshCells({
+                columns: [params.colDef.field],
+                rowNodes: [params.node],
             })
         }
 
         return (
-            <div className='ag-theme-alpine' style={{ height: 700, width: '100%' }}>
-                <button className='night-btn' onClick={handleFillNightShift}>
-                    Заполнить ночные
-                </button>
+            <div className='ag-theme-alpine' style={{ height: 600, width: '100%' }}>
                 <AgGridReact
                     ref={gridRef}
                     rowData={rowData}
@@ -72,7 +75,6 @@ const CustomGrid = forwardRef(
                     columnHoverHighlight={true}
                     localeText={localeText}
                     onCellDoubleClicked={onCellDoubleClicked}
-                    onCellClicked={handleCellClick}
                 />
             </div>
         )

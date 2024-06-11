@@ -28,6 +28,7 @@ def send_notification_mail():
     logger.debug(f'CELERY выполнил задачу send_notification_mail {datetime.datetime.now()}')
 
 
+@celery_app.task()
 def weekends_filling() -> None:
     current_year = datetime.datetime.now().year
     weekends_get(current_year)
@@ -65,7 +66,7 @@ def setup_periodic_tasks(sender, **kwargs):
             'schedule': crontab(hour=23 - TIMEZONE, minute=55),
         },
         'calendar_filling': {
-            'task': 'weekends_filling',
+            'task': 'tasks.weekends_filling',
             'schedule': crontab(month=6, day=11, year='*', hour=7),
 
         }

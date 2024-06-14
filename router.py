@@ -1,18 +1,20 @@
 # TODO перенести логику БД в отдельный файл
 import datetime
 from fastapi import APIRouter
-from schemas import SEmployee, STimesheet, SDivisions, TimeshitTODB, EmployeeToDB
+from schemas import SEmployee, STimesheet, SDivisions, TimeshitTODB, EmployeeToDB, JsonTo1C
 from m_logger_settings import logger
 from fastapi import Depends
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import Employee, Timesheet
-from typing import List, Annotated
+from typing import List, Annotated, Dict
 
 from database.database import get_db, get_aync_db
 from database.database import db_dependency
 from database.schedule_calculation import schedule_5_2
+from service.python_to_1C import python_to_1C
+
 
 async_db_dependency = Annotated[AsyncSession, Depends(get_aync_db)]
 
@@ -149,16 +151,23 @@ async def save_timesheet(db: db_dependency, request: List[TimeshitTODB]):
                     late_value = 0
                 # ночные / дневные
                 else:
-                    day_status = 'Явка'
+                    day_status = 'явка'
                     day_status_short = 'Я'
                     skud_day_duration = float(skud_value)
                 # существующие записи
                 exist_query = select(Timesheet).where(Timesheet.employee_id == fio_id,
                                                       Timesheet.date == date)
                 existing_record = db.execute(exist_query).fetchone()
+
+
+
                 if existing_record:
                     # проверка изменений
-                    if existing_record[0].day_status == day_status:
+                    if all([existing_record[0].day_status == day_status,
+                            existing_record[0].skud_day_duration == skud_day_duration,
+                            existing_record[0].skud_day_duration == skud_night_duration,
+                            existing_record[0].skud_day_duration == late_value,
+                            ]):
                         continue
                     elif existing_record:
                         update_query = (update(Timesheet).where(Timesheet.employee_id == fio_id,
@@ -200,3 +209,12 @@ async def save_employee(db: db_dependency, request: EmployeeToDB):
     if fio_schedule == '5/2':
         schedule_5_2(fio_id)
     return {'status': 'ok'}
+
+
+@router.get('/get1C')
+async def get_1C_json(start_date: datetime.datetime,
+                      end_date: datetime.datetime):
+    result = python_to_1C(start_date=start_date, end_date=end_date, save_json=False)
+    # print(result)
+    return result
+

@@ -154,6 +154,13 @@ class EmployeeToDB(BaseModel):
 #     class Config:
 #         from_attributes = True
 
+class JsonTo1C(BaseModel):
+    """
+    Данные для 1С
+    """
+    fio: dict | None = None
+
+
 
 if __name__ == '__main__':
     divs = get_all_divisions()

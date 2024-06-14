@@ -3,10 +3,10 @@ import shutil
 from pprint import pprint
 import json, os
 from m_logger_settings import logger
-from constants import BASEDIR
+from constants import BASEDIR, MODE
 from service.kvl_calculation import kvl_calculation
 from service.fields_defaults import division_accumulation, schedule_filler
-from constants import MODE
+
 from dotenv import load_dotenv
 
 if MODE == 'test':

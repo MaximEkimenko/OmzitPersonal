@@ -1,0 +1,42 @@
+.Button:hover {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    background-color: #fff;
+    /* border: none; */
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.Button:hover {
+    background-color: #f0f0f0;
+}
+
+.Button:active {
+    background-color: #ccc;
+}
+
+.Button[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.Label {
+    /* display: block; */
+    margin-bottom: 10px;
+}
+
+.Input {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.Loading {
+    font-size: 14px;
+    color: #666;
+    margin-top: 10px;
+}

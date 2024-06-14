@@ -168,4 +168,4 @@ json/
 *.sql
 .dockerignore
 tst_in_personal.py
-.env_test
+test.env

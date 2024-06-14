@@ -7,7 +7,7 @@ from database.get_data_from_skud import get_skud_data
 from m_logger_settings import logger
 from database.get_data_from_skud_2 import skud_tabel_insert, insert_enters
 from database.schedule_calculation import schedule_5_2
-
+from service.python_to_1C import python_to_1C
 
 def schedule_db_refresh(start_date=None, end_date=None):
     """
@@ -68,6 +68,7 @@ def schedule_db_refresh(start_date=None, end_date=None):
         except Exception as e:
             logger.error(f'Ошибка при загрузке в БД personal за период за период {start_date} - {end_date}.')
             logger.exception(e)
+    # python_to_1C(start_date=start_date, end_date=end_date)
 
 
 if __name__ == '__main__':

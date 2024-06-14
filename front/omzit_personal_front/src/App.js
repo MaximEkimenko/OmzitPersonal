@@ -16,6 +16,7 @@ import {
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import EmployeeDetails from './components/EmployeeDetails'
 import CompanyRenderer from './companyRenderer.jsx'
+import Button1CJson from './components/Button1CJson.js'
 
 const isWeekend = (dateString) => {
     const date = new Date(dateString)
@@ -46,7 +47,7 @@ const App = () => {
         setEndDate(lastDayOfMonth.toISOString().split('T')[0])
     }, [])
 
-    const baseUrl = 'http://192.168.8.163:8004'
+    const baseUrl = 'http://192.168.8.163:8005'
     // const baseUrl = 'http://192.168.8.163:5001'
 
     useEffect(() => {
@@ -354,9 +355,11 @@ const App = () => {
                                     columnDefs={columnDefs}
                                     onCellValueChanged={onCellValueChanged}
                                 />
+                                <Button1CJson baseUrl={baseUrl}></Button1CJson>
                             </>
                         }
                     />
+
                     {/* {console.log(selectedDivision)} */}
                     <Route path='/employee/:fio' element={<EmployeeDetails baseUrl={baseUrl} />} />
                 </Routes>

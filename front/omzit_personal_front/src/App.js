@@ -47,18 +47,25 @@ const App = () => {
         setEndDate(lastDayOfMonth.toISOString().split('T')[0])
     }, [])
 
-    const baseUrl = 'http://192.168.8.163:8005'
-    // const baseUrl = 'http://192.168.8.163:5001'
+    // const baseUrl = 'http://192.168.8.163:8005'
+    const baseUrl = 'http://192.168.8.163:5001'
 
     useEffect(() => {
         const fetchData = async () => {
             if (!startDate || !endDate) {
                 return
             }
+            // const url = selectedDivision
+            //     ? `${baseUrl}/e/timesheet?division=${selectedDivision}&start_time=${startDate}&end_time=${endDate}`
+            //     : `${baseUrl}/e/timesheet?division=&start_time=${startDate}&end_time=${endDate}`
+            // const data = await fetchDataFromAPI(url)
+            console.log(selectedDivision)
             const url = selectedDivision
-                ? `${baseUrl}/e/timesheet?division=${selectedDivision}&start_time=${startDate}&end_time=${endDate}`
-                : `${baseUrl}/e/timesheet?division=&start_time=${startDate}&end_time=${endDate}`
+                ? `${baseUrl}/e/responsible_timesheet?fio_responsible=${selectedDivision}&start_time=${startDate}&end_time=${endDate}`
+                : `${baseUrl}/e/responsible_timesheet?fio_responsible=&start_time=${startDate}&end_time=${endDate}`
             const data = await fetchDataFromAPI(url)
+            console.log(url)
+
             setOriginalData(data)
 
             const transformedData = transformData(data, isLateView)
@@ -332,8 +339,8 @@ const App = () => {
                                 />
                                 <h1>
                                     {isLateView
-                                        ? `Опоздания ${selectedDivision}`
-                                        : `Табель ${selectedDivision}`}
+                                        ? `Опоздания отвественного: ${selectedDivision}`
+                                        : `Табель ответственного: ${selectedDivision}`}
                                 </h1>
                                 <div className='control-panel'>
                                     {isModified && <SaveButton handleSave={handleSave} />}
@@ -355,7 +362,7 @@ const App = () => {
                                     columnDefs={columnDefs}
                                     onCellValueChanged={onCellValueChanged}
                                 />
-                                <Button1CJson baseUrl={baseUrl}></Button1CJson>
+                                {/* <Button1CJson baseUrl={baseUrl}></Button1CJson> */}
                             </>
                         }
                     />
@@ -369,3 +376,4 @@ const App = () => {
 }
 
 export default App
+// HOST=0.0.0.0 npm run start

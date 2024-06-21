@@ -8,7 +8,8 @@ const DivisionSelector = ({ onSelectDivision, baseUrl }) => {
     useEffect(() => {
         const fetchDivisions = async () => {
             try {
-                const response = await fetch(`${baseUrl}/e/divisions`)
+                // const response = await fetch(`${baseUrl}/e/divisions`)
+                const response = await fetch(`${baseUrl}/e/responsible`)
                 if (!response.ok) {
                     throw new Error('Failed to fetch divisions')
                 }
@@ -20,7 +21,6 @@ const DivisionSelector = ({ onSelectDivision, baseUrl }) => {
         }
         fetchDivisions()
     }, [baseUrl])
-    // console.log(divisions)
     // console.log(selectedDivision)
     const handleChange = (event) => {
         const division = event.target.value
@@ -30,11 +30,19 @@ const DivisionSelector = ({ onSelectDivision, baseUrl }) => {
 
     return (
         <div className='division-selector'>
-            <select value={selectedDivision} onChange={handleChange}>
+            {/* <select value={selectedDivision} onChange={handleChange}>
                 <option value=''>Выберите подразделение</option>
                 {divisions.map((division) => (
                     <option key={division.id} value={division.division}>
                         {division.division}
+                    </option>
+                ))}
+            </select> */}
+            <select value={selectedDivision} onChange={handleChange}>
+                <option value=''>Выберите отвественного</option>
+                {divisions.map((division) => (
+                    <option key={division.id} value={division.fio_responsible}>
+                        {division.fio_responsible}
                     </option>
                 ))}
             </select>

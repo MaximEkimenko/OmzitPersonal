@@ -3,9 +3,9 @@ try:
 except Exception:
     from database import session_factory, async_session_factory
 try:
-    from database.models import Employee, Timesheet
+    from database.models import Employee, Timesheet, Responsible
 except Exception:
-    from models import Employee, Timesheet
+    from models import Employee, Timesheet, Responsible
 
 from sqlalchemy import select, insert, update, exists
 from m_logger_settings import logger
@@ -55,6 +55,8 @@ def bulk_update(data: list) -> None:
                                 {'status': line['status'],
                                  'KVL': line['KVL'],
                                  'KVL_last_month': line['KVL_last_month'],
+                                 'fio_responsible': line['fio_responsible'],
+                                 'INN_responsible': line['INN_responsible'],
                                  })
             session.commit()
             logger.debug(f"Обновлено {line}")
@@ -94,6 +96,12 @@ def get_division(fio: str) -> str or None:
     return result
 
 
+def get_responsible() -> tuple:
+    with session_factory() as session:
+        query = select(Responsible.fio)
+        result = session.execute(query).scalars().all()
+    return tuple(result)
+
 def select_line():
     """
     NOT USABLE
@@ -120,5 +128,6 @@ def update_line():
 
 
 if __name__ == '__main__':
-    print(get_all_divisions())
+    print(get_responsible())
+    # print(get_all_divisions())
     pass

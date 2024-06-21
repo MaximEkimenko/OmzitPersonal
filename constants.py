@@ -7,3 +7,4 @@ test_dotenv_path = os.path.join(BASEDIR, 'test.env')
 TIMEZONE = 6
 MODE = 'test'
 # MODE = 'docker'
+

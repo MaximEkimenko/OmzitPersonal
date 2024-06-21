@@ -165,6 +165,7 @@ def get_tabel_skud(start_date: str = None, end_date: str = None, access_point: s
         # время начала работы # TODO ВЫНЕСТИ В ПАРЕМЕТРЫ
         work_time_start = datetime.datetime(year=fio_enter.year, month=fio_enter.month,
                                             day=fio_enter.day, hour=8, minute=0)
+        late_value = 0
         for out in outs:
             if enter[4] == out[4] and enter[2].day == out[2].day:
                 fio_out = out[2]  # выход для fio

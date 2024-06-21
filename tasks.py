@@ -17,7 +17,7 @@ celery_app = Celery('tasks', broker='redis://redis:5370')
 @celery_app.task()
 def yesterday_from_db():
     end_date = (datetime.date.today() + datetime.timedelta(days=10)).strftime("%Y-%d-%m")
-    start_date = (datetime.date.today() - datetime.timedelta(days=10)).strftime("%Y-%d-%m")
+    start_date = (datetime.date.today() - datetime.timedelta(days=31)).strftime("%Y-%d-%m")
     # start_date = datetime.date.today() - datetime.timedelta(days=2)
     # end_date = datetime.date.today() + datetime.timedelta(days=2)
     schedule_db_refresh(start_date, end_date)
@@ -39,11 +39,9 @@ def weekends_filling() -> None:
 
 @celery_app.task()
 def json_to_1C() -> None:
-    end_date = (datetime.datetime.now() + datetime.timedelta(days=10))
-    start_date = (datetime.datetime.now() - datetime.timedelta(days=10))
+    end_date = (datetime.datetime.now() + datetime.timedelta(days=10)).strftime('%Y-%d-%m')
+    start_date = (datetime.datetime.now() - datetime.timedelta(days=10)).strftime('%Y-%d-%m')
     python_to_1C(start_date=start_date, end_date=end_date)
-
-
 
 
 @celery_app.on_after_configure.connect

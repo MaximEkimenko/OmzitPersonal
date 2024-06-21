@@ -90,6 +90,13 @@ class CalendarDays(Base):
     day_type: Mapped[str] = mapped_column(String)  # тип дня (выходной, рабочий, сокращённый)
 
 
+class Responsible(Base):
+    """ Модель ответственных """
+    __tablename__ = 'responsible'
+    id: Mapped[intpk]
+    fio: Mapped[Optional[str]] = mapped_column(String)  # фио ответственного
+
+
 # class Latecomers(Base):
 #     """Модель опоздунов """
 #     __tablename__ = 'latecomers'

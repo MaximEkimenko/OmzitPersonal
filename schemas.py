@@ -107,6 +107,16 @@ class SDivisions(BaseModel):
     division: str
 
 
+class SResponsible(BaseModel):
+    """
+    Ответственные
+    """
+    id: int
+    fio_responsible: str | None
+
+
+
+
 class EmployeeToDB(BaseModel):
     """
     Сотрудники в базу данных

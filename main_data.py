@@ -9,7 +9,8 @@ from database.get_data_from_skud_2 import skud_tabel_insert, insert_enters
 from database.schedule_calculation import schedule_5_2
 from service.python_to_1C import python_to_1C
 
-def schedule_db_refresh(start_date=None, end_date=None):
+
+def schedule_db_refresh(start_date: str = None, end_date: str = None):
     """
     Функция выполняет сбор из БД СКУД и запись в БД personal данных с даты start_date до end_date
     :param end_date:
@@ -68,13 +69,13 @@ def schedule_db_refresh(start_date=None, end_date=None):
         except Exception as e:
             logger.error(f'Ошибка при загрузке в БД personal за период за период {start_date} - {end_date}.')
             logger.exception(e)
-    # python_to_1C(start_date=start_date, end_date=end_date)
+    python_to_1C(start_date=start_date, end_date=end_date)
 
 
 if __name__ == '__main__':
     end_date_tst = (datetime.date.today() + datetime.timedelta(days=10)).strftime("%Y-%d-%m")
-    start_date_tst = (datetime.date.today() - datetime.timedelta(days=10)).strftime("%Y-%d-%m")
-
+    start_date_tst = (datetime.date.today() - datetime.timedelta(days=30)).strftime("%Y-%d-%m")
     schedule_db_refresh(start_date=start_date_tst, end_date=end_date_tst)
+    # schedule_db_refresh()
 
 

@@ -68,13 +68,15 @@ def json_creation() -> list:
                                'ДатаПриема': 'employment_date',
                                'ДатаУвольнения': 'fired_date',
                                'ДатаРождения': 'birthday_date',
-                               'ФизическоеЛицоИНН': 'INN_employee',
+                               'ИННСотрудник': 'INN_employee',
                                'ИННОрганизации': 'INN_company',
                                'Организация': 'company_name',
                                'ВидЗанятости': 'job_type',
                                'ДатаДокумента': 'document_date',
                                'Документ': 'document',
-                               'ИсходныйФайл': 'zup_filename'
+                               'ИсходныйФайл': 'zup_filename',
+                               'Ответственный': 'fio_responsible',
+                               'ИННОтветственный': 'INN_responsible',
                                }
     # перевод файла ЗУПА
     try:
@@ -102,20 +104,20 @@ def json_creation() -> list:
     return zup_fios_list
 
 # переформатирование исходного xml табеля
-    # xml_tabel_read(xml_file=xml_tabel, json_file=json_from_xml_tabel)
+# xml_tabel_read(xml_file=xml_tabel, json_file=json_from_xml_tabel)
 
-    # TODO проверить необходимость работы с табелем. Удалить по завершению тестов.
-    # словарь перевода табель файла
-    # tabel_fios_translate_dict = {'Сотрудник': 'fio',
-    #                              'Ответственный': 'fio_responsible',
-    #                              'ИННСотрудника': 'INN_employee',
-    #                              'ИННОтветственного': 'INN_responsible',
-    #                              'ИННОрганизации': 'INN_company',
-    #                              }
-    # # перевод табеля файла
-    # tabel_fios = DataPrepare(json_file=tabel_fios_json_1C, translate_dict=tabel_fios_translate_dict,
-    #                          new_json_file=tabel_fios_json_python)
-    # tabel_fios_list = tabel_fios.translate_fields()
+# TODO проверить необходимость работы с табелем. Удалить по завершению тестов.
+# словарь перевода табель файла
+# tabel_fios_translate_dict = {'Сотрудник': 'fio',
+#                              'Ответственный': 'fio_responsible',
+#                              'ИННСотрудника': 'INN_employee',
+#                              'ИННОтветственного': 'INN_responsible',
+#                              'ИННОрганизации': 'INN_company',
+#                              }
+# # перевод табеля файла
+# tabel_fios = DataPrepare(json_file=tabel_fios_json_1C, translate_dict=tabel_fios_translate_dict,
+#                          new_json_file=tabel_fios_json_python)
+# tabel_fios_list = tabel_fios.translate_fields()
 
 # # ОБЪЕДИНЕНИЕ НЕ НУЖНО!
 # # объединение ЗУП и ТАБЕЛЯ в 1 json

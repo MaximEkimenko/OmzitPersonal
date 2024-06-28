@@ -26,7 +26,6 @@ def yesterday_from_db():
 @celery_app.task()
 def send_notification_mail():
     send_email('demad@mail.ru', 'celery выполнил задачу')
-
     send_email('ekimenko.m@gmail.com', 'celery выполнил задачу')
     logger.debug(f'CELERY выполнил задачу send_notification_mail {datetime.datetime.now()}')
 
@@ -39,9 +38,7 @@ def weekends_filling() -> None:
 
 @celery_app.task()
 def json_to_1C() -> None:
-    end_date = (datetime.datetime.now() + datetime.timedelta(days=10)).strftime('%Y-%d-%m')
-    start_date = (datetime.datetime.now() - datetime.timedelta(days=10)).strftime('%Y-%d-%m')
-    python_to_1C(start_date=start_date, end_date=end_date)
+    python_to_1C()
 
 
 @celery_app.on_after_configure.connect
@@ -67,10 +64,10 @@ def setup_periodic_tasks(sender, **kwargs):
             'schedule': crontab(hour=0, minute=10),
         },
         # отправка письма
-        'email_send': {
-            'task': 'tasks.send_notification_mail',
-            'schedule': crontab(hour=0, minute=10),
-        },
+        # 'email_send': {
+        #     'task': 'tasks.send_notification_mail',
+        #     'schedule': crontab(hour=0, minute=10),
+        # },
         'latecomers': {
             'task': 'tasks.yesterday_from_db',
             'schedule': crontab(hour=2, minute=1),

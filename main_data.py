@@ -69,13 +69,13 @@ def schedule_db_refresh(start_date: str = None, end_date: str = None):
         except Exception as e:
             logger.error(f'Ошибка при загрузке в БД personal за период за период {start_date} - {end_date}.')
             logger.exception(e)
-    python_to_1C(start_date=start_date, end_date=end_date)
+    python_to_1C(save_json=True)
 
 
 if __name__ == '__main__':
     end_date_tst = (datetime.date.today() + datetime.timedelta(days=10)).strftime("%Y-%d-%m")
     start_date_tst = (datetime.date.today() - datetime.timedelta(days=30)).strftime("%Y-%d-%m")
     schedule_db_refresh(start_date=start_date_tst, end_date=end_date_tst)
-    # schedule_db_refresh()
+
 
 

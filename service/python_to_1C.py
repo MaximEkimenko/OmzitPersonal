@@ -55,6 +55,7 @@ def python_to_1C(save_json=True):
     # получение словаря ответственных
     resp_xml_dir = os.getenv('RESP_DIR')
     # resp_xml_dir = configs['RESP_DIR']
+    # resp_xml_dir = '/personal_app/xml_data/responsible/ЕРП.xml'
     responsible_filter_list = get_responsible()
     resp_dict = convert_list_to_dict_with_filter(resp_xml_read(resp_xml_dir), filter_list=responsible_filter_list)
     with session_factory() as session:
@@ -89,8 +90,10 @@ def python_to_1C(save_json=True):
     if save_json:
         onec_dir_json = os.getenv('ONEC_DIR_JSON')
         # onec_dir_json = configs['ONEC_DIR_JSON']
+        # onec_dir_json = '/personal_app/xml_data/reformat'
         json_to_1C_file = os.path.join(onec_dir_json, 'json_to_1C.json')
         json_to_1C = convert_list_to_dict(list_to_1C)
+
         # преобразование поля _Сотрудник в Сотрудник
         new_list = []
         for person in json_to_1C.values():

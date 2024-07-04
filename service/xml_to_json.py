@@ -6,6 +6,15 @@ from service.tools import convert_list_to_dict
 import pandas as pd
 import os
 from m_logger_settings import logger
+# from constants import MODE
+# if MODE == 'test':
+#     from constants import test_dotenv_path as dotenv_path
+# if MODE == 'docker':
+#     from constants import dotenv_path as dotenv_path
+# if os.path.exists(dotenv_path):
+#     load_dotenv(dotenv_path)
+#     configs = dotenv_values(dotenv_path)
+
 
 
 def xml_accumulate(xml_path: str) -> list:
@@ -59,7 +68,8 @@ def xml_zup_read(xml_path: str, xlsx_file: str = None, json_file: str = None) ->
     iter_step = len((list(uniq_fields)))  # шаг одного фио
 
     # добавление responsible
-    resp_dict = convert_list_to_dict(resp_xml_read(r'D:\xml_data\responsible\ЕРП.xml'))
+    # resp_dict = convert_list_to_dict(resp_xml_read(r'D:\xml_data\responsible\ЕРП.xml'))
+    resp_dict = convert_list_to_dict(resp_xml_read(r'/personal_app/xml_data/responsible/ЕРП.xml'))
     # шапка
     fields = [elem.tag for elem in all_roots[0:iter_step]]
     fields.append('ИсходныйФайл')  # дополнительное поле имени исходного файла
